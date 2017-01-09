@@ -1,0 +1,141 @@
+---
+
+- name: Reload nginx
+  service: name=nginx state=reloaded
+  tags:
+    - deploy
+    - ssl
+
+
+- name: Restart nginx
+  service: name=nginx state=restarted enabled=yes
+  tags:
+    - deploy
+    - ssl
+
+
+- name: Install base packages
+  apt: name={{ item }} state=latest
+  with_items:
+    - git-core
+    - openssl
+  tags: ssl
+
+
+- name: Make directories for certificates
+  file: path=/var/certs state=directory
+  tags: ssl
+
+
+- name: Ensure the challenges directory exists
+  file: path=/var/www/challenges/ state=directory
+  tags: ssl
+
+
+- name: Clone acme-tiny client
+  git: clone=yes dest=/var/www/{{ app_name }}/acme-tiny repo=https://github.com/diafygi/acme-tiny
+  tags: ssl
+
+
+- name: Generate a Diffie-Hellman group with openssl
+  shell: openssl dhparam -out /var/certs/dhparam.pem 2048
+  args:
+    creates: /var/certs/dhparam.pem
+  tags: ssl
+
+
+# Generate the account key once, and only once
+- name: Generate an account key
+  shell: openssl genrsa 4096 >> /var/certs/account.key
+  args:
+    creates: /var/certs/account.key
+  tags: ssl
+
+
+# Same with the domain key, we don't want to recreate it
+- name: Generate a domain key
+  shell: openssl genrsa 4096 >> /var/certs/{{ app_name }}.key
+  args:
+    creates: /var/certs/{{ app_name }}.key
+  tags: ssl
+
+
+# Serious weirdness with escaping has lead to this "solution" to getting this command on the server
+# and executing it with bash
+- name: Add CSR generation script
+  template: src=gen_csr.j2 dest=/tmp/{{ app_name }}_gen_csr mode="u+rwx"
+  register: csr_script
+  tags: ssl
+
+
+- name: Create a CSR
+  shell: cat /tmp/{{ app_name }}_gen_csr | bash >> /var/certs/{{ app_name }}.csr
+  when: csr_script.changed
+  tags: ssl
+
+
+# We only want to create a cert if the CSR has changed (i.e a new domain was added)
+- name: Get a signed certificate!
+  shell: python /var/www/{{ app_name }}/acme-tiny/acme_tiny.py --account-key /var/certs/account.key --csr /var/certs/{{ app_name }}.csr --acme-dir /var/www/challenges/ > /var/certs/{{ app_name }}.cert
+  when: csr_script.changed
+  register: crt_created
+  tags: ssl
+
+
+# TODO: We really should check to make sure that we're getting the _correct_ intermediate certificate
+- name: Get the intermediate certificate
+  get_url: url=https://letsencrypt.org/certs/lets-encrypt-x3-cross-signed.pem dest=/var/certs/intermediate.pem
+  when: crt_created.changed
+  tags: ssl
+
+
+- name: Create the chained certificate for nginx
+  shell: cat /var/certs/{{ app_name }}.cert /var/certs/intermediate.pem > /var/certs/{{ app_name }}.chained.pem
+  when: crt_created.changed
+  tags: ssl
+
+
+- name: Add nginx config (with SSL)
+  template: src=../../nginx/templates/nginx_django_ssl.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
+  tags: ssl
+
+
+- name: Link nginx config (with SSL)
+  file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
+  tags: ssl
+
+
+- name: Restart nginx
+  service: name=nginx state=restarted
+  tags: ssl
+
+
+- name: Auto-renew every week
+  cron: name="renew {{ app_name }}" job="/var/certs/renew_{{ app_name }}.sh 2>> /var/log/acme_tiny.log" special_time="weekly"
+  tags: ssl
+
+
+- name: Set Django SECURE_SSL_REDIRECT=True
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="SECURE_SSL_REDIRECT = True" regexp="^SECURE_SSL_REDIRECT ="
+  tags: ssl
+  when: force_ssl == 'yes'
+
+
+- name: Set Django SECURE_PROXY_SSL_HEADER
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="SECURE_PROXY_SSL_HEADER = ('HTTP_X_SCHEME', 'https')" regexp="^SECURE_PROXY_SSL_HEADER ="
+  tags: ssl
+
+
+- name: Make sure only root can access SSL certificates
+  file: path=/var/certs/ owner=root group=root recurse=yes mode=600
+  tags: ssl
+
+
+- name: Add auto-renew script
+  template: src=renew_cert.sh dest=/var/certs/renew_{{ app_name }}.sh mode="u+x"
+  tags: ssl
+
+
+- name: Restart app
+  service: name={{ service_name }} state=restarted
+  tags: ssl

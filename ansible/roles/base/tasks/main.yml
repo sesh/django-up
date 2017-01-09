@@ -1,0 +1,59 @@
+---
+
+- name: Install Python 2.7.x
+  raw: test -e /usr/bin/python || (apt -y update && apt install -y python)
+  tags: init
+
+
+- name: Only Ubuntu 14.04 and 16.04 are supported
+  fail: msg="Unsupported OS - only Ubuntu 14.04 and 16.04 are supported"
+  when: (ansible_distribution_release != 'trusty' and ansible_distribution_release != 'xenial')
+
+
+- apt: update_cache=yes
+- apt: upgrade=dist
+
+
+- name: Add the Python 3.5 PPA
+  apt_repository: repo='ppa:fkrull/deadsnakes' state=present
+
+
+# only required on trusty to ensure we get 2.7.12
+- name: Add the Python 2.7 PPA
+  apt_repository: repo='ppa:fkrull/deadsnakes-python2.7' state=present
+  when: ansible_distribution_release == 'trusty'
+
+
+- name: Install base packages
+  apt: name={{ item }} state=latest
+  with_items:
+    - git-core
+    - build-essential
+    - python-setuptools
+    - python2.7-dev
+    - python3-dev
+    - python2.7
+    - python3.5
+    - python-pip
+    - virtualenvwrapper
+    - libpq-dev
+    - libjpeg-dev
+    - zlib1g-dev
+    - mosh
+    - htop
+    - httpie
+
+
+- name: Install system-level python packages
+  pip: name={{ item }} state=latest
+  with_items:
+    - httplib2
+    - glances
+
+
+- name: Add app user group
+  group: name={{ app_name }} system=yes state=present
+
+
+- name: Add app user
+  user: name={{ app_name }} groups=staff,{{ app_name }} state=present append=yes shell=/bin/bash

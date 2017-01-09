@@ -1,0 +1,15 @@
+---
+
+- name: Set Django DEBUG=True
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="KRONOS_PREFIX = '. /srv/www/{{ app_name }}/env.sh;'" regexp="^KRONOS_PREFIX ="
+  tags:
+    - deploy
+    - kronos
+
+- name: Install Kronos crontab
+  django_manage: command=installtasks app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
+  environment: "{{ django_environment }}"
+  become_user: "{{ app_name }}"
+  tags:
+    - deploy
+    - kronos

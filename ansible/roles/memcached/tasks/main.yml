@@ -1,0 +1,10 @@
+---
+
+- name: Install memcached
+  apt: name=memcached state=latest
+
+- name: Add memcached config
+  template: src=memcached.conf.j2 dest=/etc/memcached.conf
+
+- name: Start / restart memcached
+  service: name=memcached state=restarted

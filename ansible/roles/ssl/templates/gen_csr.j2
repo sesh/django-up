@@ -1,0 +1,2 @@
+#!/bin/sh
+openssl req -new -sha256 -key /var/certs/{{ app_name }}.key -subj "/" -reqexts SAN -config <(cat /etc/ssl/openssl.cnf <(printf "[SAN]\nsubjectAltName={{ csr_domains }}"))

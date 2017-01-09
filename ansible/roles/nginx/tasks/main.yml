@@ -1,0 +1,47 @@
+---
+
+- name: Add the official nginx/stable apt repository
+  apt_repository: repo='ppa:nginx/stable' state=present
+
+
+- name: Apt update
+  apt: update_cache=yes
+
+
+- name: Install nginx
+  apt: name=nginx state=latest
+  notify:
+    - Restart nginx
+
+
+- name: Remove default nginx config
+  file: path=/etc/nginx/sites-enabled/default state=absent
+
+
+- name: Check to see if an SSL certificate exists
+  stat: path=/var/certs/{{ app_name }}.chained.pem
+  register: crt_exists
+
+
+- name: Add nginx config
+  template: src=nginx_django.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
+  when: crt_exists.stat.exists == False
+
+
+- name: Link nginx config
+  file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
+  when: crt_exists.stat.exists == False
+  notify:
+    - Restart nginx
+
+
+- name: Add nginx config (with SSL)
+  template: src=nginx_django_ssl.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
+  when: crt_exists.stat.exists == True
+
+
+- name: Link nginx config (with SSL)
+  file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
+  when: crt_exists.stat.exists == True
+  notify:
+    - Restart nginx

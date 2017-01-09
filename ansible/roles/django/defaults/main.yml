@@ -1,0 +1,7 @@
+---
+
+gunicorn_port: 9000
+gunicorn_workers: 4
+python_version: python3.5
+requirements_path: 'requirements.txt'
+extra_app_dirs: []

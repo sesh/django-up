@@ -1,0 +1,51 @@
+server {
+    listen 80;
+    server_name {{ domain_names }};
+
+    client_max_body_size 50M;
+
+    # no security problem here, since / is alway passed to upstream
+    root /srv/www/{{ app_name }}/code/{{ app_name }};
+
+    # always serve this directory for settings up let's encrypt
+    location /.well-known/acme-challenge/ {
+        alias /var/www/challenges/;
+        try_files $uri =404;
+    }
+
+    # favicon
+    location /favicon.ico {
+        log_not_found off;
+        root /srv/www/{{ app_name }}/static/;
+        expires 24h;
+        gzip on;
+        gzip_types image/x-icon;
+    }
+
+    # serve directly - analogous for static/staticfiles
+    location /static/ {
+        root /srv/www/{{ app_name }}/;
+        gzip on;
+        gzip_types text/plain text/html text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+        expires 24h;
+    }
+
+    location /media/ {
+        root /srv/www/{{ app_name }}/;
+        gzip on;
+        gzip_types text/plain text/html text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+        expires 24h;
+    }
+
+    location / {
+        proxy_pass_header Server;
+        proxy_set_header Host $http_host;
+        proxy_redirect off;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Scheme $scheme;
+        proxy_connect_timeout {{ nginx_timeout }};
+        proxy_read_timeout {{ nginx_timeout }};
+        proxy_pass http://localhost:{{ gunicorn_port }}/;
+    }
+}

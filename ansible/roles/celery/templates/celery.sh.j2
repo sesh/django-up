@@ -1,0 +1,12 @@
+#!/bin/bash
+set -e
+
+{% for variable_name, value in django_environment.items() %}
+export {{ variable_name }}="{{ value }}"
+{% endfor %}
+{% endif %}
+
+cd /srv/www/{{ app_name }}/code/backend/
+source /srv/www/{{ app_name }}/venv/bin/activate
+
+exec celery worker --app={{ app_name }} --events --concurrency=1

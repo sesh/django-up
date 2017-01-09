@@ -1,0 +1,22 @@
+---
+
+- name: Add app-celery.sh file
+  template: src=celery.sh.j2 dest=/srv/www/{{ app_name }}/{{ app_name }}-celery.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
+  tags: deploy
+
+
+- name: Upstart config
+  template: src=celery.upstart.conf.j2 dest=/etc/init/{{ service_name }}-celery.conf
+  tags: deploy
+  when: ansible_distribution_release == 'trusty'
+
+
+- name: Systemd config
+  template: src=celery.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}-celery.service
+  tags: deploy
+  when: ansible_distribution_release == 'xenial'
+
+
+- name: Restart celery (and ensure it's enabled)
+  service: name={{ service_name }}-celery state=started enabled=yes
+  tags: deploy

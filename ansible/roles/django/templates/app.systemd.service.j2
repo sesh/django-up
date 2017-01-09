@@ -1,0 +1,15 @@
+[Unit]
+Description=Runner for {{ app_name }}
+After=network.target
+
+[Service]
+User={{ app_name }}
+Group={{ app_name }}
+WorkingDirectory=/srv/www/{{ app_name }}/
+ExecStart=/srv/www/{{ app_name }}/{{ app_name }}.sh
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

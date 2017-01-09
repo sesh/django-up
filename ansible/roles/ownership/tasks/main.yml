@@ -1,0 +1,5 @@
+---
+
+- name: Set ownership of everything to app_name
+  file: path=/srv/www/{{ app_name }} owner={{ app_name }} group=staff recurse=yes mode=775
+  tags: deploy

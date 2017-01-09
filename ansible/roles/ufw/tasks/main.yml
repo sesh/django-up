@@ -1,0 +1,13 @@
+---
+
+- name: Ensure latest UFW
+  apt: name=ufw state=latest
+
+- ufw: policy=allow direction=outgoing
+- ufw: policy=deny direction=incoming
+
+- ufw: rule=allow port=22
+- ufw: rule=allow port=80 proto=tcp
+- ufw: rule=allow port=443 proto=tcp
+
+- ufw: state=enabled

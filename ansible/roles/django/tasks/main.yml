@@ -1,0 +1,122 @@
+---
+
+- name: Make directories for application
+  file: path={{ item }} state=directory
+  with_items:
+    - /srv/www/{{ app_name }}
+    - /srv/www/{{ app_name }}/static
+    - /srv/www/{{ app_name }}/logs
+    - /srv/www/{{ app_name }}/code
+    - /srv/www/{{ app_name }}/media
+  tags: deploy
+
+
+- name: Make any extra directories that we've defined
+  file: path="/srv/www/{{ app_name }}/{{ item }}" state=directory
+  with_items: "{{ extra_app_dirs }}"
+  tags: deploy
+
+
+- name: Copy application files to server
+  copy: src={{ app_tar }} dest=/tmp/{{ app_name }}.tar
+  tags: deploy
+
+
+- name: Ensure latest pip
+  pip: virtualenv=/srv/www/{{ app_name }}/venv name=pip state=latest virtualenv_python={{ python_version }}
+  tags: deploy
+
+
+- name: Ensure latest gunicorn
+  pip: virtualenv=/srv/www/{{ app_name }}/venv name=gunicorn state=latest virtualenv_python={{ python_version }}
+  tags: deploy
+
+
+- name: Ensure latest psycopg2
+  pip: virtualenv=/srv/www/{{ app_name }}/venv name=psycopg2 state=latest virtualenv_python={{ python_version }}
+  tags: deploy
+
+
+- name: Upstart config
+  template: src=app.upstart.conf.j2 dest=/etc/init/{{ service_name }}.conf
+  tags: deploy
+  when: ansible_distribution_release == 'trusty'
+
+
+- name: Systemd config
+  template: src=app.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}.service
+  tags: deploy
+  when: ansible_distribution_release == 'xenial'
+
+
+- name: Add app.sh file
+  template: src=app.sh.j2 dest=/srv/www/{{ app_name }}/{{ app_name }}.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
+  tags: deploy
+
+
+- name: Add env.sh file
+  template: src=env.sh.j2 dest=/srv/www/{{ app_name }}/env.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
+  tags: deploy
+
+
+- name: Stop app
+  service: name={{ service_name }} state=stopped
+  tags: deploy
+  ignore_errors: yes
+
+
+- name: Nuke code
+  file: path=/srv/www/{{ app_name }}/code state=absent
+  tags: deploy
+
+
+- name: Recreate code directory
+  file: path=/srv/www/{{ app_name }}/code state=directory
+  tags: deploy
+
+
+- name: Extract code
+  unarchive: src=/tmp/{{ app_name }}.tar dest=/srv/www/{{ app_name }}/code copy=no
+  tags: deploy
+  notify:
+    - Restart app
+
+
+- name: Set Django's static root
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="STATIC_ROOT = '/srv/www/{{ app_name }}/static/'" regexp="^STATIC_ROOT"
+  tags: deploy
+
+
+- name: Set Django's media root
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="MEDIA_ROOT = '/srv/www/{{ app_name }}/media/'" regexp="^MEDIA_ROOT"
+  tags: deploy
+
+
+- name: Set Django DEBUG=False
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = False" regexp="^DEBUG ="
+  when: django_debug == "no"
+  tags: deploy
+
+
+- name: Set Django DEBUG=True
+  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = True" regexp="^DEBUG ="
+  when: django_debug == "yes"
+  tags: deploy
+
+
+- name: Install requirements
+  pip: virtualenv=/srv/www/{{ app_name }}/venv requirements=/srv/www/{{ app_name }}/code/{{ requirements_path }} virtualenv_python={{ python_version }}
+  tags: deploy
+
+
+- name: Django migrate
+  django_manage: command=migrate app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
+  environment: "{{ django_environment }}"
+  tags: deploy
+
+
+- name: Django collect static
+  django_manage: command=collectstatic app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
+  environment: "{{ django_environment }}"
+  ignore_errors: yes  # this will fail if `staticfiles` is not in installed apps. That's okay.
+  tags: deploy

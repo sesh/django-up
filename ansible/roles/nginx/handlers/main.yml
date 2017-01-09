@@ -1,0 +1,15 @@
+---
+
+- name: Reload nginx
+  service: name=nginx state=reloaded
+  tags:
+    - deploy
+    - ssl
+
+
+- name: Restart nginx
+  service: name=nginx state=restarted enabled=yes
+  tags:
+    - deploy
+    - ssl
+
