@@ -85,7 +85,7 @@ class Command(BaseCommand):
             for host in settings.ALLOWED_HOSTS:
                 if host.startswith('.'):
                     domains.append('*' + host)
-                else:
+                elif '.' in host:
                     domains.append(host)
 
         print('Domains (ALLOWED_HOSTS or --domain): ', domains)
