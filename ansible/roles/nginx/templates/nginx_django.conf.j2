@@ -26,14 +26,14 @@ server {
     location /static/ {
         root /srv/www/{{ app_name }}/;
         gzip on;
-        gzip_types text/plain text/html text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+        gzip_types application/eot application/x-otf application/font application/x-perl application/font-sfnt application/x-ttf application/javascript font/eot application/json font/ttf application/opentype font/otf application/otf font/opentype application/pkcs7-mime image/svg+xml application/truetype text/css application/ttf text/csv application/vnd.ms-fontobject text/html application/xhtml+xml text/javascript application/xml text/js application/xml+rss text/plain application/x-font-opentype text/richtext application/x-font-truetype text/tab-separated-values application/x-font-ttf text/xml application/x-httpd-cgi text/x-script application/x-javascript text/x-component application/x-mpegurl text/x-java-source application/x-opentype;
         expires 24h;
     }
 
     location /media/ {
         root /srv/www/{{ app_name }}/;
         gzip on;
-        gzip_types text/plain text/html text/css application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+        gzip_types application/eot application/x-otf application/font application/x-perl application/font-sfnt application/x-ttf application/javascript font/eot application/json font/ttf application/opentype font/otf application/otf font/opentype application/pkcs7-mime image/svg+xml application/truetype text/css application/ttf text/csv application/vnd.ms-fontobject text/html application/xhtml+xml text/javascript application/xml text/js application/xml+rss text/plain application/x-font-opentype text/richtext application/x-font-truetype text/tab-separated-values application/x-font-ttf text/xml application/x-httpd-cgi text/x-script application/x-javascript text/x-component application/x-mpegurl text/x-java-source application/x-opentype;
         expires 24h;
     }
 
