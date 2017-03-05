@@ -126,11 +126,6 @@
   tags: ssl
 
 
-- name: Make sure only root can access SSL certificates
-  file: path=/var/certs/ owner=root group=root recurse=yes mode=600
-  tags: ssl
-
-
 - name: Add auto-renew script
   template: src=renew_cert.sh dest=/var/certs/renew_{{ app_name }}.sh mode="u+x"
   tags: ssl
