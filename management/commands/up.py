@@ -6,13 +6,13 @@ import string
 import subprocess
 import sys
 import tempfile
-import yaml
 
 import requests
-
+import yaml
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
+
 
 """
 Deploying Django applications as quickly as you create them
