@@ -1,6 +1,7 @@
 from __future__ import print_function
 
 import os
+import random
 import shutil
 import string
 import subprocess
@@ -116,6 +117,7 @@ class Command(BaseCommand):
                 'csr_domains': ','.join(['DNS:{}'.format(domain) for domain in domains]),
                 'extra_app_dirs': getattr(settings, 'UP_DIRS', []),
                 'force_ssl': 'no' if options['dont_force_ssl'] else 'yes',
+                'ssl_cron_day_of_week': random.randint(0,6),
             },
             'roles': [
                 'base',

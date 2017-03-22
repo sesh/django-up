@@ -111,8 +111,8 @@
 
 
 - name: Auto-renew every week
-  cron: name="renew {{ app_name }}" job="/var/certs/renew_{{ app_name }}.sh 2>> /var/log/acme_tiny.log" special_time="weekly"
-  tags: ssl
+  cron: name="renew {{ app_name }}" job="/var/certs/renew_{{ app_name }}.sh 2>> /var/log/acme_tiny.log" weekday="{{ ssl_cron_day_of_week }}" hour=2 minute=0
+  tags: ssl, deploy
 
 
 - name: Set Django SECURE_SSL_REDIRECT=True
