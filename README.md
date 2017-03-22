@@ -34,7 +34,7 @@ With optional roles installing and configuring:
 For now it's best to add `django-up` to your project as a git submodule:
 
 ```shell
-> git submodule add https://github.com/sesh/django-up up
+> git submodule add git@github.com:sesh/django-up.git up
 ```
 
 (the `up` on the end there is vital - we want the submodule to be added as the `up` directory)
