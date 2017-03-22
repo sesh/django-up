@@ -1,6 +1,6 @@
 ---
 
-- name: Set Django DEBUG=True
+- name: Ensure KRONOS_PREFIX is set
   lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="KRONOS_PREFIX = '. /srv/www/{{ app_name }}/env.sh;'" regexp="^KRONOS_PREFIX ="
   tags:
     - deploy
