@@ -9,6 +9,7 @@
 - name: Install Kronos crontab
   django_manage: command=installtasks app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
   environment: "{{ django_environment }}"
+  become: yes
   become_user: "{{ app_name }}"
   tags:
     - deploy
