@@ -89,11 +89,15 @@ class Command(BaseCommand):
                 elif '.' in host:
                     domains.append(host)
 
+            for domain in django_environment.get('DJANGO_ALLOWED_HOSTS', '').split(','):
+                domain = domain.strip()
+                domains.append(domain)
+
         print('Domains (ALLOWED_HOSTS or --domain): ', domains)
 
         for h in hostnames:
             if h not in domains:
-                sys.exit("{} isn't in allowed domains".format(h))
+                sys.exit("{} isn't in allowed domains or DJANGO_ALLOWED_HOSTS".format(h))
 
         # database settings
         db_pass = str(get_random_string(12, string.ascii_letters + string.digits))
