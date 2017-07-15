@@ -11,11 +11,14 @@ GROUP={{ app_name }}
 {% for variable_name, value in django_environment.items() %}
 export {{ variable_name }}="{{ value }}"
 {% endfor %}
+{% if enable_newrelic %}
+export NEW_RELIC_CONFIG_FILE=/srv/www/{{ app_name }}/newrelic.ini
+{% endif %}
 
 cd /srv/www/{{ app_name }}/code
 source /srv/www/{{ app_name }}/venv/bin/activate
 
 test -d $LOGDIR || mkdir -p $LOGDIR
-exec gunicorn {{ app_name }}.wsgi:application -w $NUM_WORKERS \
+exec {% if enable_newrelic %}newrelic-admin run-program {% endif %}gunicorn {{ app_name }}.wsgi:application -w $NUM_WORKERS \
   --timeout=300 --user=$USER --group=$GROUP --log-level=debug \
   {% if gunicorn_port %}-b localhost:{{ gunicorn_port }}{% endif %} --log-file=$LOGFILE 2>> $LOGFILE
