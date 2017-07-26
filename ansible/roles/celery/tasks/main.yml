@@ -5,16 +5,9 @@
   tags: deploy
 
 
-- name: Upstart config
-  template: src=celery.upstart.conf.j2 dest=/etc/init/{{ service_name }}-celery.conf
-  tags: deploy
-  when: ansible_distribution_release == 'trusty'
-
-
 - name: Systemd config
   template: src=celery.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}-celery.service
   tags: deploy
-  when: ansible_distribution_release == 'xenial'
 
 
 - name: Restart celery (and ensure it's enabled)

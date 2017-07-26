@@ -1,26 +1,6 @@
 ---
 
-- name: Add the official postgres apt repository
-  apt_repository: repo='deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main' state=present
-  when: ansible_distribution_release == 'trusty'
-
-
-- name: Add apt key for postgres
-  apt_key: url=https://www.postgresql.org/media/keys/ACCC4CF8.asc state=present
-  when: ansible_distribution_release == 'trusty'
-
-
 - apt: update_cache=yes
-
-
-- name: Install postgresql
-  apt: name={{ item }} state=latest
-  with_items:
-    - postgresql-9.4
-    - postgresql-client
-    - python-psycopg2
-    - python3-psycopg2
-  when: ansible_distribution_release == 'trusty'
 
 
 - name: Install postgresql
@@ -30,7 +10,6 @@
     - postgresql-client
     - python-psycopg2
     - python3-psycopg2
-  when: ansible_distribution_release != 'trusty'
 
 
 - name: Ensure postgres is running

@@ -91,7 +91,8 @@ class Command(BaseCommand):
 
             for domain in django_environment.get('DJANGO_ALLOWED_HOSTS', '').split(','):
                 domain = domain.strip()
-                domains.append(domain)
+                if domain:
+                    domains.append(domain)
 
         print('Domains (ALLOWED_HOSTS or --domain): ', domains)
 

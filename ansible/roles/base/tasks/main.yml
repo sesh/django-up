@@ -5,23 +5,17 @@
   tags: init
 
 
-- name: Only Ubuntu 14.04 and 16.04 are supported
-  fail: msg="Unsupported OS - only Ubuntu 14.04 and 16.04 are supported"
-  when: (ansible_distribution_release != 'trusty' and ansible_distribution_release != 'xenial')
+- name: Only Ubuntu 16.04 is supported
+  fail: msg="Unsupported OS - Ubuntu 16.04 is supported"
+  when: (ansible_distribution_release != 'xenial')
 
 
 - apt: update_cache=yes
 - apt: upgrade=dist
 
 
-- name: Add the Python 3.5 PPA
+- name: Add the Python 3 PPA
   apt_repository: repo='ppa:fkrull/deadsnakes' state=present
-
-
-# only required on trusty to ensure we get 2.7.12
-- name: Add the Python 2.7 PPA
-  apt_repository: repo='ppa:fkrull/deadsnakes-python2.7' state=present
-  when: ansible_distribution_release == 'trusty'
 
 
 - name: Install base packages
