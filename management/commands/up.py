@@ -149,6 +149,8 @@ class Command(BaseCommand):
         if 'DJANGO_NEWRELIC_KEY' in django_environment:
             yam[0]['vars']['enable_newrelic'] = 'yes'
             yam[0]['vars']['newrelic_key'] = django_environment['DJANGO_NEWRELIC_KEY']
+        else:
+            yam[0]['vars']['enable_newrelic'] = 'no'
 
         app_yml = open(os.path.join(up_dir, '{}.yml'.format(app_name)), 'w')
         yaml.dump(yam, app_yml)
