@@ -22,6 +22,10 @@
   tags: deploy
 
 
+- name: Nuke virtualenv
+  file: path=/srv/www/{{ app_name }}/venv state=absent
+
+
 - name: Ensure latest pip
   pip: virtualenv=/srv/www/{{ app_name }}/venv name=pip state=latest virtualenv_python={{ python_version }}
   tags: deploy
@@ -78,7 +82,6 @@
 - name: Recreate code directory
   file: path=/srv/www/{{ app_name }}/code state=directory
   tags: deploy
-
 
 - name: Extract code
   unarchive: src=/tmp/{{ app_name }}.tar dest=/srv/www/{{ app_name }}/code copy=no

@@ -6,7 +6,7 @@
 
 
 - name: Only Ubuntu 16.04 is supported
-  fail: msg="Unsupported OS - Ubuntu 16.04 is supported"
+  fail: msg="Unsupported OS - only Ubuntu 16.04 is supported"
   when: (ansible_distribution_release != 'xenial')
 
 
@@ -15,7 +15,7 @@
 
 
 - name: Add the Python 3 PPA
-  apt_repository: repo='ppa:fkrull/deadsnakes' state=present
+  apt_repository: repo='ppa:deadsnakes/ppa' state=present
 
 
 - name: Install base packages
