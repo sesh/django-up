@@ -115,7 +115,7 @@ class Command(BaseCommand):
                 'domain_names': ' '.join(domains),
                 'gunicorn_port': getattr(settings, 'GUNICORN_PORT', '9000'),
                 'app_tar': app_tar.name,
-                'python_version': getattr(settings, 'UP_PYTHON_VERSION', 'python3.5'),
+                'python_version': getattr(settings, 'UP_PYTHON_VERSION', 'python3.6'),
                 'db_password': db_pass,
                 'django_debug': 'yes' if options['debug'] else 'no',
                 'django_environment': django_environment,
