@@ -5,9 +5,9 @@
   tags: init
 
 
-- name: Only Ubuntu 16.04 is supported
-  fail: msg="Unsupported OS - only Ubuntu 16.04 is supported"
-  when: (ansible_distribution_release != 'xenial')
+- name: Only Ubuntu LTS releases are supported
+  fail: msg="Unsupported OS - only Ubuntu 16.04 and 17.10 are supported"
+  when: (ansible_distribution_release != 'xenial') and (ansible_distribution_release != 'artful')
 
 
 - apt: update_cache=yes
@@ -16,6 +16,7 @@
 
 - name: Add the Python 3 PPA
   apt_repository: repo='ppa:deadsnakes/ppa' state=present
+  when: ansible_distribution_release == 'xenial'
 
 
 - name: Install base packages
@@ -27,8 +28,6 @@
     - python2.7-dev
     - python3-dev
     - python2.7
-    - python3.5
-    - python3.5-dev
     - python3.6
     - python3.6-dev
     - python-pip
@@ -39,6 +38,14 @@
     - mosh
     - htop
     - httpie
+
+
+- name: Install Python 3.5 on Xenial
+  apt: name={{ item }} state=latest
+  with_items:
+    - python3.5
+    - python3.5-dev
+  when: ansible_distribution_release == 'xenial'
 
 
 - name: Install system-level python packages
