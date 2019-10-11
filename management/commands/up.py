@@ -56,7 +56,7 @@ class Command(BaseCommand):
             with open(os.path.join(settings.BASE_DIR, '.up-env')) as env_file:
                 for line in env_file.readlines():
                     if line and '=' in line and line.strip()[0] not in ['#', ';']:
-                        var, val = line.split('=', 2)
+                        var, val = line.split('=', 2)[:2]
                         if ' ' not in var:
                             django_environment[var] = val.strip()
                         else:
