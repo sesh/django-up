@@ -1,63 +1,58 @@
 ---
 
-- name: Install Python 2.7.x
-  raw: test -e /usr/bin/python || (apt -y update && apt install -y python)
-  tags: init
-
-
-- name: Only Ubuntu LTS releases are supported
-  fail: msg="Unsupported OS - only Ubuntu 16.04 and 17.10 are supported"
-  when: (ansible_distribution_release != 'xenial') and (ansible_distribution_release != 'artful')
-
-
 - apt: update_cache=yes
 - apt: upgrade=dist
 
 
 - name: Add the Python 3 PPA
   apt_repository: repo='ppa:deadsnakes/ppa' state=present
-  when: ansible_distribution_release == 'xenial'
 
 
 - name: Install base packages
-  apt: name={{ item }} state=latest
-  with_items:
-    - git-core
-    - build-essential
-    - python-setuptools
-    - python2.7-dev
-    - python3-dev
-    - python2.7
-    - python3.6
-    - python3.6-dev
-    - python-pip
-    - virtualenvwrapper
-    - libpq-dev
-    - libjpeg-dev
-    - zlib1g-dev
-    - mosh
-    - htop
-    - httpie
-
-
-- name: Install Python 3.5 on Xenial
-  apt: name={{ item }} state=latest
-  with_items:
-    - python3.5
-    - python3.5-dev
-  when: ansible_distribution_release == 'xenial'
-
-
-- name: Install system-level python packages
-  pip: name={{ item }} state=latest
-  with_items:
-    - httplib2
-    - glances
+  apt:
+    pkg:
+      - git-core
+      - build-essential
+      - python-setuptools
+      - python3.8
+      - python3.8-dev
+      - virtualenvwrapper
+      - libpq-dev
+      - libjpeg-dev
+      - zlib1g-dev
+      - htop
 
 
 - name: Add app user group
-  group: name={{ app_name }} system=yes state=present
+  group:
+    name: "{{ app_name }}"
+    system: yes
+    state: present
 
 
 - name: Add app user
-  user: name={{ app_name }} groups=staff,{{ app_name }} state=present append=yes shell=/bin/bash
+  user:
+    name: "{{ app_name }}"
+    groups:
+      - "{{ app_name }}"
+    state: present
+    append: yes
+    shell: /bin/bash
+
+
+- name: Add admin user group group
+  group:
+    name: "brenton"
+    system: yes
+    state: present
+
+
+- name: Add admin user
+  user:
+    name: "brenton"
+    groups:
+      - staff
+      - "{{ app_name }}"
+    state: present
+    append: yes
+    shell: /bin/bash

@@ -1,36 +1,38 @@
 ---
 
 - name: Reload nginx
-  service: name=nginx state=reloaded
+  service:
+    name: nginx
+    state: reloaded
   tags:
     - deploy
     - ssl
 
 
 - name: Restart nginx
-  service: name=nginx state=restarted enabled=yes
+  service:
+    name: nginx
+    state: restarted
+    enabled: yes
   tags:
     - deploy
     - ssl
 
 
 - name: Install base packages
-  apt: name={{ item }} state=latest
-  with_items:
-    - git-core
-    - openssl
+  apt:
+    pkg:
+      - git-core
+      - openssl
   tags: ssl
-
 
 - name: Make directories for certificates
   file: path=/var/certs state=directory
   tags: ssl
 
-
 - name: Ensure the challenges directory exists
   file: path=/var/www/challenges/ state=directory
   tags: ssl
-
 
 - name: Clone acme-tiny client
   git: clone=yes dest=/var/www/{{ app_name }}/acme-tiny repo=https://github.com/diafygi/acme-tiny
@@ -76,7 +78,7 @@
 
 # We only want to create a cert if the CSR has changed (i.e a new domain was added)
 - name: Get a signed certificate!
-  shell: python /var/www/{{ app_name }}/acme-tiny/acme_tiny.py --account-key /var/certs/account.key --csr /var/certs/{{ app_name }}.csr --acme-dir /var/www/challenges/ > /var/certs/{{ app_name }}.cert
+  shell: python3 /var/www/{{ app_name }}/acme-tiny/acme_tiny.py --account-key /var/certs/account.key --csr /var/certs/{{ app_name }}.csr --acme-dir /var/www/challenges/ > /var/certs/{{ app_name }}.cert
   when: csr_script.changed
   register: crt_created
   tags: ssl
@@ -111,7 +113,7 @@
 
 
 - name: Auto-renew every week
-  cron: name="renew {{ app_name }}" job="/var/certs/renew_{{ app_name }}.sh 2>> /var/log/acme_tiny.log" weekday="{{ ssl_cron_day_of_week }}" hour=2 minute=0
+  cron: name="renew {{ app_name }}" job="/var/certs/renew_{{ app_name }}.sh 2>> /var/log/acme_tiny.log" weekday={{ ssl_cron_day_of_week }} hour=2 minute=0
   tags: ssl, deploy
 
 

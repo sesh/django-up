@@ -1,9 +1,5 @@
 ---
 
-- name: Add the official nginx/stable apt repository
-  apt_repository: repo='ppa:nginx/stable' state=present
-
-
 - name: Apt update
   apt: update_cache=yes
 

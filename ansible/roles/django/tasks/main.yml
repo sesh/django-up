@@ -37,7 +37,7 @@
 
 
 - name: Ensure latest psycopg2
-  pip: virtualenv=/srv/www/{{ app_name }}/venv name=psycopg2 state=latest virtualenv_python={{ python_version }}
+  pip: virtualenv=/srv/www/{{ app_name }}/venv name=psycopg2-binary state=latest virtualenv_python={{ python_version }}
   tags: deploy
 
 
