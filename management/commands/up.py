@@ -8,7 +8,6 @@ import subprocess
 import sys
 import tempfile
 
-import requests
 import yaml
 from django.conf import settings
 from django.core.management.base import BaseCommand
