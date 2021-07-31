@@ -84,15 +84,8 @@ class Command(BaseCommand):
             for host in settings.ALLOWED_HOSTS:
                 if host.startswith('.'):
                     domains.append('*' + host)
-                elif '.' in host:
+                elif '.' in host and not host.startswith('127.'):
                     domains.append(host)
-
-            for domain in django_environment.get('DJANGO_ALLOWED_HOSTS', '').split(','):
-                domain = domain.strip()
-                if domain:
-                    domains.append(domain)
-
-        print('Domains (ALLOWED_HOSTS or --domain): ', domains)
 
         for h in hostnames:
             if h not in domains:
@@ -117,26 +110,26 @@ class Command(BaseCommand):
                 'db_password': db_pass,
                 'django_debug': 'yes' if options['debug'] else 'no',
                 'django_environment': django_environment,
-                'csr_domains': ','.join(['DNS:{}'.format(domain) for domain in domains]),
                 'extra_app_dirs': getattr(settings, 'UP_DIRS', []),
                 'force_ssl': 'yes',
                 'ssl_cron_day_of_week': random.randint(0, 6),
+                'certbot_domains': '-d ' + ' -d '.join(domains),
+                'certbot_email': 'brenton@brntn.me',
+                'domain': domains[0]
             },
             'roles': [
                 'base',
-                'swap',
+                'ufw',
                 'opensmtpd',
                 'postgres',
                 'nginx',
                 'django',
-                'ssl',
                 'ownership',
-                'ufw',
             ]
         }]
 
         if hasattr(settings, 'UP_EXTRAS'):
-            # available extras: redis, memcached, kronos
+            # available extras: redis
             yam[0]['roles'].extend(getattr(settings, 'UP_EXTRAS'))
             print(yam[0]['roles'])
 
@@ -144,12 +137,6 @@ class Command(BaseCommand):
             for k, val in getattr(settings, 'UP_VARS', {}).items():
                 yam[0]['vars'][k] = val
                 print('{}: {}'.format(k, val))
-
-        if 'DJANGO_NEWRELIC_KEY' in django_environment:
-            yam[0]['vars']['enable_newrelic'] = 'yes'
-            yam[0]['vars']['newrelic_key'] = django_environment['DJANGO_NEWRELIC_KEY']
-        else:
-            yam[0]['vars']['enable_newrelic'] = 'no'
 
         app_yml = open(os.path.join(up_dir, '{}.yml'.format(app_name)), 'w')
         yaml.dump(yam, app_yml)
@@ -160,14 +147,6 @@ class Command(BaseCommand):
             hosts_file.write('\n'.join(hostnames))
 
         extra = []
-        tags = []
-
-        if options['quick']:
-            tags.append('deploy')
-
-        if tags:
-            extra.append('-t')
-            extra.append(','.join(tags))
 
         if options['verbose']:
             extra.append('-vvvv')

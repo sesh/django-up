@@ -41,18 +41,6 @@
   tags: deploy
 
 
-- name: Install new relic helper
-  pip: virtualenv=/srv/www/{{ app_name }}/venv name=newrelic state=latest virtualenv_python={{ python_version }}
-  tags: deploy
-  when: enable_newrelic == 'yes'
-
-
-- name: Newrelic config
-  template: src=newrelic.ini.j2 dest=/srv/www/{{ app_name }}/newrelic.ini
-  tags: deploy
-  when: enable_newrelic == 'yes'
-
-
 - name: Systemd config
   template: src=app.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}.service
   tags: deploy

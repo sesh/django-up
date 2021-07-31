@@ -1,6 +1,6 @@
 # django-up
 
-`django-up` is a zero configuration [Django][django] deployment tool to deploy Django Projects to a Ubuntu 20.04 LTS environment.
+`django-up` is a zero configuration [Django][django] deployment tool to deploy a project to a Ubuntu 20.04 LTS environment.
 
 
 ```shell
@@ -50,7 +50,7 @@ DATABASES = {'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR, 'd
 Make sure that `GUNICORN_PORT` is set to a unique port for the server that you are deploying to:
 
 ```python
-GUNICORN_PORT = 5566
+GUNICORN_PORT = 8556
 ```
 
 Deploy with the `up` management command:
@@ -65,4 +65,4 @@ Deploy with the `up` management command:
 Add environment variables to a `.up-env` file alongside your `./manage.py`. These will be exported into the environment before running your server (and management commands).
 
 
-  [djanog]: https://www.djangoproject.com
+  [django]: https://www.djangoproject.com

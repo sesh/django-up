@@ -14,30 +14,47 @@
   file: path=/etc/nginx/sites-enabled/default state=absent
 
 
-- name: Check to see if an SSL certificate exists
-  stat: path=/var/certs/{{ app_name }}.chained.pem
-  register: crt_exists
+- name: Ensure the challenges directory exists
+  file: path=/var/www/challenges/ state=directory
 
 
-- name: Add nginx config
+- name: Find the latest SSL certificate for this domain
+  shell: "ls /etc/letsencrypt/live | grep -i {{ domain }}* | tail -n 1"
+  register: cert_check
+
+
+- name: Add nginx config (No SSL)
   template: src=nginx_django.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
-  when: crt_exists.stat.exists == False
+  when: cert_check.stdout == ""
 
 
-- name: Link nginx config
+- name: Link nginx config (No SSL)
   file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
-  when: crt_exists.stat.exists == False
+  when: cert_check.stdout == ""
   notify:
+    - Reload nginx
     - Restart nginx
+
+
+- name: Request certificate for our domains
+  shell: |
+    certbot certonly --webroot -w /var/www/challenges {{ certbot_domains }} --non-interactive --agree-tos -m {{ certbot_email }}
+  when: cert_check.stdout == ""
+
+
+- name: Find the latest SSL certificate for this domain
+  shell: "ls /etc/letsencrypt/live | grep -i {{ domain }}* | tail -n 1"
+  register: cert_check
 
 
 - name: Add nginx config (with SSL)
   template: src=nginx_django_ssl.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
-  when: crt_exists.stat.exists == True
+  when: cert_check.stdout != ""
 
 
 - name: Link nginx config (with SSL)
   file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
-  when: crt_exists.stat.exists == True
+  when: cert_check.stdout != ""
   notify:
+    - Reload nginx
     - Restart nginx

@@ -9,7 +9,7 @@ server {
 
     # always serve this directory for settings up let's encrypt
     location /.well-known/acme-challenge/ {
-        alias /var/www/challenges/;
+        root /var/www/challenges/;
         try_files $uri =404;
     }
 

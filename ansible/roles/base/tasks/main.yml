@@ -23,6 +23,19 @@
       - htop
 
 
+- name: Install snap package for certbot
+  snap:
+    name: certbot
+    classic: yes
+
+
+- name: Create symlink for certbot
+  file:
+    src: /snap/bin/certbot
+    dest: /usr/bin/certbot
+    state: link
+
+
 - name: Add app user group
   group:
     name: "{{ app_name }}"
@@ -34,24 +47,6 @@
   user:
     name: "{{ app_name }}"
     groups:
-      - "{{ app_name }}"
-    state: present
-    append: yes
-    shell: /bin/bash
-
-
-- name: Add admin user group group
-  group:
-    name: "brenton"
-    system: yes
-    state: present
-
-
-- name: Add admin user
-  user:
-    name: "brenton"
-    groups:
-      - staff
       - "{{ app_name }}"
     state: present
     append: yes
