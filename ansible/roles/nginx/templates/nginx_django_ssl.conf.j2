@@ -2,8 +2,8 @@ server {
     listen 443 ssl http2;
     server_name {{ domain_names }};
 
-    ssl_certificate       /etc/letsencrypt/live/{{ cert_check.stdout }}/fullchain.pem;
-    ssl_certificate_key   /etc/letsencrypt/live/{{ cert_check.stdout }}/privkey.pem;
+    ssl_certificate       /etc/acme.sh/live/{{ cert_check.stdout }}/cert.pem;
+    ssl_certificate_key   /etc/acme.sh/live/{{ cert_check.stdout }}/key.pem;
 
     ssl_session_timeout 1d;
     ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions

@@ -18,35 +18,50 @@
   file: path=/var/www/challenges/ state=directory
 
 
+- name: Ensure the acme.sh/nginx certs directory exists
+  file: path=/etc/acme.sh/live/{{ domain }} state=directory
+
+
+# Check if there is already a certifcate installed for {{ domain }}
 - name: Find the latest SSL certificate for this domain
-  shell: "ls /etc/letsencrypt/live | grep -i {{ domain }}* | tail -n 1"
+  shell: "ls /etc/acme.sh/live/ | grep -i {{ domain }}* | tail -n 1"
   register: cert_check
 
-
+# If no cert:
+# Add nginx config without SSL
 - name: Add nginx config (No SSL)
   template: src=nginx_django.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf
   when: cert_check.stdout == ""
-
 
 - name: Link nginx config (No SSL)
   file: src=/etc/nginx/sites-available/{{ app_name }}.conf dest=/etc/nginx/sites-enabled/{{ app_name }}.conf state=link
   when: cert_check.stdout == ""
 
-
 - name: Reload nginx
   service: name=nginx state=reloaded
+  when: cert_check.stdout == ""
 
+# Use acme.sh to request a certificate
+- name: Use acme.sh to request a certificate
+  shell: /root/.acme.sh/acme.sh --issue {{ certbot_domains }} -w /var/www/challenges/
+  when: cert_check.stdout == ""
 
-- name: Request certificate for our domains
-  shell: |
-    certbot certonly --webroot -w /var/www/challenges {{ certbot_domains }} --non-interactive --agree-tos -m {{ certbot_email }}
+# Use acme.sh to "install" the certificate
+- name: Install the certificates with acme.sh
+  shell: /root/.acme.sh/acme.sh --install-cert {{ certbot_domains }} \
+    --key-file       /etc/acme.sh/live/{{ domain }}/key.pem  \
+    --fullchain-file /etc/acme.sh/live/{{ domain }}/cert.pem \
+    --reloadcmd     "service nginx force-reload"
   when: cert_check.stdout == ""
 
 
+# Check if there is already a certifcate installed for {{ domain }}
 - name: Find the latest SSL certificate for this domain
-  shell: "ls /etc/letsencrypt/live | grep -i {{ domain }}* | tail -n 1"
+  shell: "ls /etc/acme.sh/live/ | grep -i {{ domain }}* | tail -n 1"
   register: cert_check
 
+# If cert:
+# Just setup the SSL config
 
 - name: Add nginx config (with SSL)
   template: src=nginx_django_ssl.conf.j2 dest=/etc/nginx/sites-available/{{ app_name }}.conf

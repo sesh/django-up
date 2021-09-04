@@ -116,3 +116,10 @@
   environment: "{{ django_environment }}"
   ignore_errors: yes  # this will fail if `staticfiles` is not in installed apps. That's okay.
   tags: deploy
+
+
+- name: Django create cache table
+  django_manage: command=createcachetable app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
+  environment: "{{ django_environment }}"
+  # ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
+  tags: deploy

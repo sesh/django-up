@@ -4,8 +4,8 @@
 - apt: upgrade=dist
 
 
-- name: Add the Python 3 PPA
-  apt_repository: repo='ppa:deadsnakes/ppa' state=present
+# - name: Add the Python 3 PPA
+#   apt_repository: repo='ppa:deadsnakes/ppa' state=present
 
 
 - name: Install base packages
@@ -23,19 +23,6 @@
       - htop
 
 
-- name: Install snap package for certbot
-  snap:
-    name: certbot
-    classic: yes
-
-
-- name: Create symlink for certbot
-  file:
-    src: /snap/bin/certbot
-    dest: /usr/bin/certbot
-    state: link
-
-
 - name: Add app user group
   group:
     name: "{{ app_name }}"
@@ -51,3 +38,9 @@
     state: present
     append: yes
     shell: /bin/bash
+
+
+- name: Install acme.sh
+  shell: curl https://get.acme.sh | sh -s email=brenton@brntn.me
+  args:
+    warn: no
