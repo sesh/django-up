@@ -27,6 +27,17 @@
   tags: deploy
 
 
+- name: Check if there is a previous DB password saved
+  shell: "cat /srv/www/{{ app_name }}/.dbpass"
+  register: dot_dbpass
+
+
+- name: Replace the random DB password with the one from the .dbpass file
+  set_fact: 
+    db_password: "{{ dot_dbpass.stdout }}"
+  when: dot_dbpass.stdout != ""
+
+
 - name: Create the database user for this app
   postgresql_user:
     name: "{{ app_name }}"
@@ -35,3 +46,9 @@
   become: yes
   become_user: postgres
   tags: deploy
+
+
+- name: Save the db password for next time
+  copy:
+    content: "{{ db_password }}"
+    dest: "/srv/www/{{ app_name }}/.dbpass"

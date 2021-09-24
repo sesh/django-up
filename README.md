@@ -12,7 +12,7 @@ Running `django-up` will deploy a production ready, SSL-enabled, Django applicat
 - Nginx
 - Gunicorn
 - PostreSQL
-- Let's Encrypt
+- SSL with acme.sh
 - UFW
 - OpenSMTPd
 

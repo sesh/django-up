@@ -1,16 +1,5 @@
 ---
 
-- name: Make directories for application
-  file: path={{ item }} state=directory
-  with_items:
-    - /srv/www/{{ app_name }}
-    - /srv/www/{{ app_name }}/static
-    - /srv/www/{{ app_name }}/logs
-    - /srv/www/{{ app_name }}/code
-    - /srv/www/{{ app_name }}/media
-  tags: deploy
-
-
 - name: Make any extra directories that we've defined
   file: path="/srv/www/{{ app_name }}/{{ item }}" state=directory
   with_items: "{{ extra_app_dirs }}"
@@ -107,19 +96,22 @@
 
 - name: Django migrate
   django_manage: command=migrate app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
-  environment: "{{ django_environment }}"
+  environment:
+    - DATABASE_URL: "postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
   tags: deploy
 
 
 - name: Django collect static
   django_manage: command=collectstatic app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
-  environment: "{{ django_environment }}"
+  environment:
+    - DATABASE_URL: "postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
   ignore_errors: yes  # this will fail if `staticfiles` is not in installed apps. That's okay.
   tags: deploy
 
 
 - name: Django create cache table
   django_manage: command=createcachetable app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
-  environment: "{{ django_environment }}"
+  environment:
+    - DATABASE_URL: "postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
   # ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
   tags: deploy

@@ -91,10 +91,8 @@ class Command(BaseCommand):
             if h not in domains:
                 sys.exit("{} isn't in allowed domains or DJANGO_ALLOWED_HOSTS".format(h))
 
-        # database settings
+        # database password
         db_pass = str(get_random_string(12, string.ascii_letters + string.digits))
-        db_url = 'postgres://{}:{}@localhost:5432/{}'.format(app_name, db_pass, app_name)
-        django_environment['DATABASE_URL'] = db_url
 
         yam = [{
             'hosts': app_name,

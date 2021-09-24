@@ -44,3 +44,14 @@
   shell: curl https://get.acme.sh | sh -s email=brenton@brntn.me
   args:
     warn: no
+
+
+- name: Make directories for application
+  file: path={{ item }} state=directory
+  with_items:
+    - /srv/www/{{ app_name }}
+    - /srv/www/{{ app_name }}/static
+    - /srv/www/{{ app_name }}/logs
+    - /srv/www/{{ app_name }}/code
+    - /srv/www/{{ app_name }}/media
+  tags: deploy

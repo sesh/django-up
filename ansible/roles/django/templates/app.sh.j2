@@ -12,6 +12,7 @@ GROUP={{ app_name }}
 {% for variable_name, value in django_environment.items() %}
 export {{ variable_name }}="{{ value }}"
 {% endfor %}
+export DATABASE_URL="postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
 
 cd /srv/www/{{ app_name }}/code
 source /srv/www/{{ app_name }}/venv/bin/activate
