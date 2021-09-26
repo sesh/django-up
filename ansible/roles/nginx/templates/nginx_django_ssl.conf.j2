@@ -18,7 +18,7 @@ server {
     ssl_stapling_verify on;
 
     # enable hsts
-    add_header Strict-Transport-Security "max-age=31536000;";
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
 
     client_max_body_size 50M;
 
