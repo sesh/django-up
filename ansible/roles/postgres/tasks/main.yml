@@ -29,6 +29,7 @@
 
 - name: Check if there is a previous DB password saved
   shell: "cat /srv/www/{{ app_name }}/.dbpass"
+  ignore_errors: yes
   register: dot_dbpass
 
 

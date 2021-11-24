@@ -40,6 +40,8 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
+        ready = input("Have you updated your requirments file?")
+
         ansible_dir = os.path.join(os.path.dirname(__file__), "..", "..", "ansible")
         hostnames = options["hostnames"]
         app_name = settings.WSGI_APPLICATION.split(".")[0]
