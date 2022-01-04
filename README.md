@@ -44,7 +44,9 @@ Set up your database to use `dj_database_url`:
 
 ```python
 import dj_database_url
-DATABASES = {'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR, 'db.sqlite3'}')}
+DATABASES = {
+    'default': dj_database_url.config(default=f'sqlite:///{BASE_DIR / "db.sqlite3"}')
+}
 ```
 
 Make sure that `GUNICORN_PORT` is set to a unique port for the server that you are deploying to:
