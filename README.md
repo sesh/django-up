@@ -40,6 +40,12 @@ INSTALLED_APPS = [
 
 Add your target domain to the `ALLOWED_HOSTS` in your `settings.py`.
 
+Set the `SECURE_PROXY_SSL_HEADER` setting in your `settings.py` to ensure the connection is considered secure.
+
+```python
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_SCHEME', 'https')
+```
+
 Set up your database to use `dj_database_url`:
 
 ```python
