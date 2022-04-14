@@ -17,7 +17,7 @@
   file: path=/etc/acme.sh/live/{{ domain }} state=directory
 
 
-# Check if there is already a certifcate installed for {{ domain }}
+# Check if there is already a certificate installed for {{ domain }}
 - name: Find the latest SSL certificate for this domain
   shell: "ls /etc/acme.sh/live/{{ domain }} | tail -n 1"
   register: cert_check
