@@ -1,6 +1,6 @@
 # django-up
 
-`django-up` is a zero configuration [Django][django] deployment tool to deploy a project to a Debian 11 environment.
+`django-up` is a zero configuration [Django][django] deployment tool to deploy a project to a Ubuntu 20.04 LTS environment.
 
 
 ```shell
