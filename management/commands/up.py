@@ -62,7 +62,7 @@ class Command(BaseCommand):
                             django_environment[var] = val.strip()
                         else:
                             print("Ignoring environment variable with space: ", line)
-            print("Loaded environment from .env: ", django_environment)
+            print("Loaded environment from .env: ", django_environment.keys())
         except FileNotFoundError:
             pass
 
