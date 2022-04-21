@@ -94,17 +94,22 @@
   tags: deploy
 
 
+- name: Setup environment dictionary for management commands
+  set_fact:
+    env: "{{ django_environment|combine({'DJANGO_DATABASE_URL': 'postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}'}) }}"
+
+
 - name: Django migrate
   django_manage: command=migrate app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
   environment:
-    - DATABASE_URL: "postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
+    - "{{ env }}"
   tags: deploy
 
 
 - name: Django collect static
   django_manage: command=collectstatic app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
   environment:
-    - DATABASE_URL: "postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
+    - "{{ env }}"
   ignore_errors: yes  # this will fail if `staticfiles` is not in installed apps. That's okay.
   tags: deploy
 
@@ -112,6 +117,6 @@
 - name: Django create cache table
   django_manage: command=createcachetable app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
   environment:
-    - DATABASE_URL: "postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}"
-  # ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
+    - "{{ env }}"
+  ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
   tags: deploy
