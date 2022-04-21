@@ -1,6 +1,6 @@
 # django-up
 
-`django-up` is a zero configuration [Django][django] deployment tool to deploy a project to a Ubuntu 20.04 LTS environment.
+`django-up` is a zero configuration [Django][django] deployment tool to deploy a project to a Debian 11 environment.
 
 
 ```shell
@@ -46,6 +46,18 @@ Set the `SECURE_PROXY_SSL_HEADER` setting in your `settings.py` to ensure the co
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_SCHEME', 'https')
 ```
 
+Configure Django to load the SECRET_KEY from your environment, and add a secure secret key to your `.env` file:
+
+```python
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+```
+
+`.env`:
+
+```
+DJANGO_SECRET_KEY=dt(t9)7+&cm$nrq=p(pg--i)#+93dffwt!r05k-isd^8y1y0
+```
+
 Set up your database to use `dj_database_url`:
 
 ```python
@@ -70,7 +82,7 @@ Deploy with the `up` management command:
 
 ### Setting environment variables
 
-Add environment variables to a `.up-env` file alongside your `./manage.py`. These will be exported into the environment before running your server (and management commands).
+Add environment variables to a `.env` file alongside your `./manage.py`. These will be exported into the environment before running your server (and management commands).
 
 
   [django]: https://www.djangoproject.com
