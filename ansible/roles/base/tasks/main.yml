@@ -54,4 +54,3 @@
     - /srv/www/{{ app_name }}/logs
     - /srv/www/{{ app_name }}/code
     - /srv/www/{{ app_name }}/media
-  tags: deploy

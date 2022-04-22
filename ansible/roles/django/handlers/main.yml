@@ -5,4 +5,3 @@
     name: "{{ service_name }}"
     state: restarted
     enabled: yes
-  tags: deploy

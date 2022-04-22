@@ -24,7 +24,6 @@
     template: "template0"
   become: yes
   become_user: postgres
-  tags: deploy
 
 
 - name: Check if there is a previous DB password saved
@@ -34,7 +33,7 @@
 
 
 - name: Replace the random DB password with the one from the .dbpass file
-  set_fact: 
+  set_fact:
     db_password: "{{ dot_dbpass.stdout }}"
   when: dot_dbpass.stdout != ""
 
@@ -46,7 +45,6 @@
     password: "{{ db_password }}"
   become: yes
   become_user: postgres
-  tags: deploy
 
 
 - name: Save the db password for next time
