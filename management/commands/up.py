@@ -149,16 +149,6 @@ class Command(BaseCommand):
             yam[0]["roles"].remove("ufw")
             yam[0]["roles"].remove("opensmtpd")
 
-        if hasattr(settings, "UP_EXTRAS"):
-            # available extras: redis
-            yam[0]["roles"].extend(getattr(settings, "UP_EXTRAS"))
-            print(yam[0]["roles"])
-
-        if hasattr(settings, "UP_VARS"):
-            for k, val in getattr(settings, "UP_VARS", {}).items():
-                yam[0]["vars"][k] = val
-                print("{}: {}".format(k, val))
-
         app_yml = open(os.path.join(up_dir, "{}.yml".format(app_name)), "w")
         yaml.dump(yam, app_yml)
 
