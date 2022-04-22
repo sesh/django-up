@@ -174,3 +174,4 @@ class Command(BaseCommand):
 
         # execute ansible
         return_code = subprocess.call(command)
+        sys.exit(return_code)
