@@ -34,7 +34,7 @@ class Command(BaseCommand):
         parser.add_argument("hostnames", nargs="+", type=str)
         parser.add_argument("--domain", nargs=1, type=str)
         parser.add_argument("--debug", action="store_true", default=False, dest="debug")
-        parser.add_argument("--quick", action="store_true", default=False, dest="quick")
+        parser.add_argument("--skip-base", action="store_true", default=False, dest="skip_base")
         parser.add_argument(
             "--verbose", action="store_true", default=False, dest="verbose"
         )
@@ -144,6 +144,11 @@ class Command(BaseCommand):
             }
         ]
 
+        if options["skip_base"]:
+            yam[0]["roles"].remove("base")
+            yam[0]["roles"].remove("ufw")
+            yam[0]["roles"].remove("opensmtpd")
+
         if hasattr(settings, "UP_EXTRAS"):
             # available extras: redis
             yam[0]["roles"].extend(getattr(settings, "UP_EXTRAS"))
@@ -162,14 +167,14 @@ class Command(BaseCommand):
             hosts_file.write("[{}]\n".format(app_name))
             hosts_file.write("\n".join(hostnames))
 
-        extra = []
+        ansible_args = []
 
         if options["verbose"]:
-            extra.append("-vvvv")
+            ansible_args.append("-vvvv")
 
         # build the ansible command
         command = ["ansible-playbook", "-i", os.path.join(up_dir, "hosts")]
-        command.extend(extra)
+        command.extend(ansible_args)
         command.extend([os.path.join(up_dir, "{}.yml".format(app_name))])
 
         # execute ansible
