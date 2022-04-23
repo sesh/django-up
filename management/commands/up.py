@@ -18,12 +18,7 @@ from django.utils.crypto import get_random_string
 Deploying Django applications as quickly as you create them
 
 Usage:
-    ./manage.py up <hostname>... [--debug]
-
-Your application needs to be configured to use dj_database_url and include your
-target domain in ALLOWED_HOSTS.
-
-nginx will be configured to serve
+    ./manage.py up <hostname>... [--debug] [--skip-base] [--verbose]
 """
 
 
@@ -50,12 +45,15 @@ class Command(BaseCommand):
         # copy our ansible files into our up_dir
         shutil.copytree(ansible_dir, up_dir)
 
+        # Build up the django_environment variable from the contents of the .env
+        # file on the local machine. These environment variables are injected into
+        # the running environment using the app.sh file that's created.
         django_environment = {}
         try:
             with open(os.path.join(settings.BASE_DIR, ".env")) as env_file:
                 for line in env_file.readlines():
                     if line and "=" in line and line.strip()[0] not in ["#", ";"]:
-                        var, val = line.split("=", 2)[:2]
+                        var, val = line.split("=", 1)
                         if " " not in var:
                             django_environment[var] = val.strip()
                         else:
@@ -64,7 +62,8 @@ class Command(BaseCommand):
         except FileNotFoundError:
             pass
 
-        # create a tarball of our application code
+        # create a tarball of our application code, excluding some common directories
+        # and files that are unlikely to be wanted on the remote machine
         subprocess.call(
             [
                 "tar",
@@ -105,7 +104,9 @@ class Command(BaseCommand):
                     "{} isn't in allowed domains or DJANGO_ALLOWED_HOSTS".format(h)
                 )
 
-        # database password
+        # create a random database password to use for the database user, this is
+        # saved on the remote machine and will be overridden by the ansible run
+        # if it exists
         db_pass = str(get_random_string(12, string.ascii_letters + string.digits))
 
         yam = [
@@ -126,8 +127,6 @@ class Command(BaseCommand):
                     "django_debug": "yes" if options["debug"] else "no",
                     "django_environment": django_environment,
                     "extra_app_dirs": getattr(settings, "UP_DIRS", []),
-                    "force_ssl": "yes",
-                    "ssl_cron_day_of_week": random.randint(0, 6),
                     "certbot_domains": "-d " + " -d ".join(domains),
                     "certbot_email": "brenton@brntn.me",
                     "domain": domains[0],
@@ -144,11 +143,15 @@ class Command(BaseCommand):
             }
         ]
 
+        # if --skip-base is provided we remove "base" roles from the run
+        # this requires that these have been previously ran (i.e. you cannot)
+        # use the flag on the first run.
         if options["skip_base"]:
             yam[0]["roles"].remove("base")
             yam[0]["roles"].remove("ufw")
             yam[0]["roles"].remove("opensmtpd")
 
+        #
         app_yml = open(os.path.join(up_dir, "{}.yml".format(app_name)), "w")
         yaml.dump(yam, app_yml)
 
@@ -157,8 +160,8 @@ class Command(BaseCommand):
             hosts_file.write("[{}]\n".format(app_name))
             hosts_file.write("\n".join(hostnames))
 
+        # add any extra ansible arguments that we need
         ansible_args = []
-
         if options["verbose"]:
             ansible_args.append("-vvvv")
 
