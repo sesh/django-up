@@ -13,7 +13,6 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
 
-
 """
 Deploying Django applications as quickly as you create them
 
@@ -29,7 +28,9 @@ class Command(BaseCommand):
         parser.add_argument("hostnames", nargs="+", type=str)
         parser.add_argument("--domain", nargs=1, type=str)
         parser.add_argument("--debug", action="store_true", default=False, dest="debug")
-        parser.add_argument("--skip-base", action="store_true", default=False, dest="skip_base")
+        parser.add_argument(
+            "--skip-base", action="store_true", default=False, dest="skip_base"
+        )
         parser.add_argument(
             "--verbose", action="store_true", default=False, dest="verbose"
         )
