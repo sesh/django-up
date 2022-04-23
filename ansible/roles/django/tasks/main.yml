@@ -1,5 +1,23 @@
 ---
 
+- name: Check if there is a previous DB password saved
+  shell: "cat /srv/www/{{ app_name }}/.dbpass"
+  ignore_errors: yes
+  register: dot_dbpass
+
+
+- name: Replace the random DB password with the one from the .dbpass file
+  set_fact:
+    db_password: "{{ dot_dbpass.stdout }}"
+  when: dot_dbpass.stdout != ""
+
+
+
+- name: Setup environment dictionary for management commands
+  set_fact:
+    env: "{{ django_environment|combine({'DJANGO_DATABASE_URL': 'postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}'}) }}"
+
+
 - name: Make any extra directories that we've defined
   file: path="/srv/www/{{ app_name }}/{{ item }}" state=directory
   with_items: "{{ extra_app_dirs }}"
@@ -7,6 +25,44 @@
 
 - name: Copy application files to server
   copy: src={{ app_tar }} dest=/tmp/{{ app_name }}.tar
+
+
+- name: Create temporary directory
+  file: path=/tmp/{{ app_name }}/code state=directory
+
+
+- name: Extract code
+  unarchive: src=/tmp/{{ app_name }}.tar dest=/tmp/{{ app_name }}/code copy=no
+
+
+- name: Set Django's static root
+  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="STATIC_ROOT = '/srv/www/{{ app_name }}/static/'" regexp="^STATIC_ROOT"
+
+
+- name: Set Django's media root
+  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="MEDIA_ROOT = '/srv/www/{{ app_name }}/media/'" regexp="^MEDIA_ROOT"
+
+
+- name: Set Django DEBUG=False
+  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = False" regexp="^DEBUG ="
+  when: django_debug == "no"
+
+
+- name: Set Django DEBUG=True
+  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = True" regexp="^DEBUG ="
+  when: django_debug == "yes"
+
+
+- name: Systemd config
+  template: src=app.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}.service
+
+
+- name: Add app.sh file
+  template: src=app.sh.j2 dest=/srv/www/{{ app_name }}/{{ app_name }}.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
+
+
+- name: Add env.sh file
+  template: src=env.sh.j2 dest=/srv/www/{{ app_name }}/env.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
 
 
 - name: Nuke virtualenv
@@ -25,18 +81,6 @@
   pip: virtualenv=/srv/www/{{ app_name }}/venv name=psycopg2-binary state=latest virtualenv_python={{ python_version }}
 
 
-- name: Systemd config
-  template: src=app.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}.service
-
-
-- name: Add app.sh file
-  template: src=app.sh.j2 dest=/srv/www/{{ app_name }}/{{ app_name }}.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
-
-
-- name: Add env.sh file
-  template: src=env.sh.j2 dest=/srv/www/{{ app_name }}/env.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
-
-
 - name: Stop app
   service: name={{ service_name }} state=stopped
   ignore_errors: yes
@@ -49,37 +93,13 @@
 - name: Recreate code directory
   file: path=/srv/www/{{ app_name }}/code state=directory
 
-- name: Extract code
-  unarchive: src=/tmp/{{ app_name }}.tar dest=/srv/www/{{ app_name }}/code copy=no
-  notify:
-    - Restart app
 
-
-- name: Set Django's static root
-  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="STATIC_ROOT = '/srv/www/{{ app_name }}/static/'" regexp="^STATIC_ROOT"
-
-
-- name: Set Django's media root
-  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="MEDIA_ROOT = '/srv/www/{{ app_name }}/media/'" regexp="^MEDIA_ROOT"
-
-
-- name: Set Django DEBUG=False
-  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = False" regexp="^DEBUG ="
-  when: django_debug == "no"
-
-
-- name: Set Django DEBUG=True
-  lineinfile: dest=/srv/www/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = True" regexp="^DEBUG ="
-  when: django_debug == "yes"
+- name: Copy code to /srv/
+  copy: src=/tmp/{{ app_name }}/code dest=/srv/www/{{ app_name }} remote_src="yes"
 
 
 - name: Install requirements
   pip: virtualenv=/srv/www/{{ app_name }}/venv requirements=/srv/www/{{ app_name }}/code/{{ requirements_path }} virtualenv_python={{ python_version }}
-
-
-- name: Setup environment dictionary for management commands
-  set_fact:
-    env: "{{ django_environment|combine({'DJANGO_DATABASE_URL': 'postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}'}) }}"
 
 
 - name: Django migrate
@@ -100,3 +120,7 @@
   environment:
     - "{{ env }}"
   ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
+
+
+- name: Start app
+  service: name={{ service_name }} state=started
