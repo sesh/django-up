@@ -15,7 +15,7 @@
 
 - name: Setup environment dictionary for management commands
   set_fact:
-    env: "{{ django_environment|combine({'DJANGO_DATABASE_URL': 'postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}'}) }}"
+    env: "{{ django_environment|combine({'DATABASE_URL': 'postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}'}) }}"
 
 
 - name: Make any extra directories that we've defined
