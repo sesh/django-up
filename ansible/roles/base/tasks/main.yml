@@ -4,8 +4,8 @@
 - apt: upgrade=dist
 
 
-# - name: Add the Python 3 PPA
-#   apt_repository: repo='ppa:deadsnakes/ppa' state=present
+- name: Add the Python 3 PPA
+  apt_repository: repo='ppa:deadsnakes/ppa' state=present
 
 
 - name: Install base packages
@@ -22,6 +22,11 @@
       - zlib1g-dev
       - htop
 
+
+- name: Install the required Python version
+  apt:
+    pkg:
+      - "{{ python_version }}"
 
 - name: Add app user group
   group:
@@ -41,7 +46,7 @@
 
 
 - name: Install acme.sh
-  shell: curl https://get.acme.sh | sh -s email=brenton@brntn.me
+  shell: curl https://get.acme.sh | sh -s email={{ certbot_email }}
   args:
     warn: no
 
