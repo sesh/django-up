@@ -1,3 +1,7 @@
+_This is a work in progress. I successfully use it to deploy a number of Django sites, but I wouldn't recommend it unless you are familiar with Ansible and Django. I'm currently planning a version 2.0 that will follow the same pattern, be easier to use, support the latest version of Terraform and clean up some older cruft._
+
+---
+
 # django-up
 
 `django-up` is a zero configuration [Django][django] deployment tool to deploy a project to a Ubuntu 20.04 LTS environment.
