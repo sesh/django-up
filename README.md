@@ -1,4 +1,4 @@
-_This is a work in progress. I successfully use it to deploy a number of Django sites, but I wouldn't recommend it unless you are familiar with Ansible and Django. I'm currently planning a version 2.0 that will follow the same pattern, be easier to use, support the latest version of Terraform and clean up some older cruft._
+_This is a work in progress. I successfully use it to deploy a number of Django sites, but I wouldn't recommend it unless you are familiar with Ansible and Django. I'm currently planning a version 2.0 that will follow the same pattern, be easier to use, support the latest version of Ansible and clean up some older cruft._
 
 ---
 
