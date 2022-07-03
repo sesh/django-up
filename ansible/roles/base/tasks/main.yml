@@ -1,19 +1,36 @@
 ---
 
+- name: Exit if target is not Ubuntu 22.04
+  meta: end_play
+  when: ansible_distribution_release not in ["jammy"]
+
+
+- name: Add Deadsnakes Nightly APT repository
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+
+
 - apt: update_cache=yes
 - apt: upgrade=dist
 
 
 - name: Install base packages
   apt:
-    pkg:
+    name:
       - build-essential
-      - python3
-      - python3-pip
+      - python3.11
+      - python3.11-dev
+      - python3.10
+      - python3.10-dev
+      - python3.9
+      - python3.9-dev
+      - python3.8
+      - python3.8-dev
       - virtualenvwrapper
       - libpq-dev
       - libjpeg-dev
       - zlib1g-dev
+    state: latest
 
 
 - name: Add app user group
