@@ -145,8 +145,7 @@ class Command(BaseCommand):
                     "opensmtpd",
                     "postgres",
                     "nginx",
-                    "django",
-                    "ownership",
+                    "django"
                 ],
             }
         ]
