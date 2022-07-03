@@ -12,12 +12,13 @@ import yaml
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.utils.crypto import get_random_string
+from django.core.validators import validate_email, ValidationError
 
 """
 Deploying Django applications as quickly as you create them
 
 Usage:
-    ./manage.py up <hostname>... [--debug] [--skip-base] [--verbose]
+    ./manage.py up <hostname>... [--debug] [--verbose]
 """
 
 
@@ -26,11 +27,9 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument("hostnames", nargs="+", type=str)
-        parser.add_argument("--domain", nargs=1, type=str)
+        parser.add_argument("--email", nargs=1, type=str, dest="email")
+        parser.add_argument("--domain", nargs=1, type=str, dest="domain")
         parser.add_argument("--debug", action="store_true", default=False, dest="debug")
-        parser.add_argument(
-            "--skip-base", action="store_true", default=False, dest="skip_base"
-        )
         parser.add_argument(
             "--verbose", action="store_true", default=False, dest="verbose"
         )
@@ -38,6 +37,14 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         ansible_dir = os.path.join(os.path.dirname(__file__), "..", "..", "ansible")
         hostnames = options["hostnames"]
+        email = options["email"]
+
+        try:
+            email = email[0]
+            validate_email(email)
+        except (ValidationError, IndexError):
+            sys.exit("The --email argument must be provided for the SSL certificate request")
+
         app_name = settings.WSGI_APPLICATION.split(".")[0]
 
         up_dir = tempfile.TemporaryDirectory().name + "/django_up"
@@ -129,7 +136,7 @@ class Command(BaseCommand):
                     "django_environment": django_environment,
                     "extra_app_dirs": getattr(settings, "UP_DIRS", []),
                     "certbot_domains": "-d " + " -d ".join(domains),
-                    "certbot_email": "brenton@brntn.me",
+                    "certbot_email": email,
                     "domain": domains[0],
                 },
                 "roles": [
@@ -144,15 +151,6 @@ class Command(BaseCommand):
             }
         ]
 
-        # if --skip-base is provided we remove "base" roles from the run
-        # this requires that these have been previously ran (i.e. you cannot)
-        # use the flag on the first run.
-        if options["skip_base"]:
-            yam[0]["roles"].remove("base")
-            yam[0]["roles"].remove("ufw")
-            yam[0]["roles"].remove("opensmtpd")
-
-        #
         app_yml = open(os.path.join(up_dir, "{}.yml".format(app_name)), "w")
         yaml.dump(yam, app_yml)
 
