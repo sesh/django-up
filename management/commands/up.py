@@ -42,7 +42,7 @@ class Command(BaseCommand):
         try:
             email = email[0]
             validate_email(email)
-        except (ValidationError, IndexError):
+        except (ValidationError, IndexError, TypeError):
             sys.exit("The --email argument must be provided for the SSL certificate request")
 
         app_name = settings.WSGI_APPLICATION.split(".")[0]
@@ -112,30 +112,36 @@ class Command(BaseCommand):
                     "{} isn't in allowed domains or DJANGO_ALLOWED_HOSTS".format(h)
                 )
 
-        # create a random database password to use for the database user, this is
-        # saved on the remote machine and will be overridden by the ansible run
-        # if it exists
-        db_pass = str(get_random_string(12, string.ascii_letters + string.digits))
-
         yam = [
             {
                 "hosts": app_name,
                 "remote_user": "root",
                 "gather_facts": "yes",
                 "vars": {
+                    # app_name is used for our user, database and to refer to our main application folder
                     "app_name": app_name,
+
+                    # app_path is the directory for this specific deployment
+                    "app_path": app_name + "-" + str(get_random_string(6, string.ascii_letters + string.digits)),
+
+                    # service_name is our systemd service (you cannot have _ or other special characters)
                     "service_name": app_name.replace("_", ""),
+
+
                     "domain_names": " ".join(domains),
+                    "certbot_domains": "-d " + " -d ".join(domains),
+
                     "gunicorn_port": getattr(settings, "GUNICORN_PORT", "9000"),
                     "app_tar": app_tar.name,
                     "python_version": getattr(
                         settings, "UP_PYTHON_VERSION", "python3.8"
                     ),
-                    "db_password": db_pass,
+                    # create a random database password to use for the database user, this is
+                    # saved on the remote machine and will be overridden by the ansible run
+                    # if it exists
+                    "db_password": str(get_random_string(12, string.ascii_letters + string.digits)),
                     "django_debug": "yes" if options["debug"] else "no",
                     "django_environment": django_environment,
-                    "extra_app_dirs": getattr(settings, "UP_DIRS", []),
-                    "certbot_domains": "-d " + " -d ".join(domains),
                     "certbot_email": email,
                     "domain": domains[0],
                 },
