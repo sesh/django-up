@@ -18,18 +18,18 @@ Running `django-up` will deploy a production ready, SSL-enabled, Django applicat
 
 ## Supporting this project
 
-The easiest way to support the development of this project is to use [my Linode referal code][linode] if you sign up to Linode.
+The easiest way to support the development of this project is to use [my Linode referal code][linode] if you need a hosting provider.
 By using this link you will receive a $100, 60-day credit once a valid payment method is added.
 If you spend $25 I will receive $25 credit in my account.
 
-`django-up` costs around $7/month to host on Linode, referrals cover that cost, plus help to support my other projects hosted there.
+`django-up` costs around $7/month to host on Linode, referrals cover that cost, plus help to support my other projects hosted there. I've used various hosting providers over the last few years but Linode is the one that I like the most.
 
 _This is the only place where referral codes are used. All other links in the documentation will take you to the services without my reference._
 
 
 ## Quick Start (with Pipenv)
 
-Create a new VPS and update the domain's DNS records to point at it. Check that you can SSH to the new server.
+Create a new VPS with your preferred provider and update your domain's DNS records to point at it. Check that you can SSH to the new server before continuing.
 
 Ensure that `ansible` is installed on the system your are deploying from.
 
@@ -46,7 +46,7 @@ pipenv run django-admin startproject djup_testproj
 cd djup_testproj
 ```
 
-Run `git init` to initialise the new project as a git repository.
+Run `git init` to initialise the new project as a git repository:
 
 ```shell
 git init
@@ -180,6 +180,17 @@ ALLOWED_HOSTS = [
   'django-up.com',
   'www.django-up.com'
 ]
+```
+
+
+### Adding `django-up` directly to your project
+
+If you are likely to customise the Ansible files then it's probably easier to just add the `django-up` files to your own git repository, rather than using a submodule.
+
+You can use a shell one liner to download the repository from Github and extract it into an "up" directory in your project:
+
+```shell
+mkdir -p up && curl -L https://github.com/sesh/django-up/archive/refs/heads/main.zip | tar -xz --strip-components=1 -C up
 ```
 
 
