@@ -96,7 +96,7 @@
 # stop the service before we run migrate
 - name: Stop app
   service: name={{ service_name }} state=stopped
-  ignore_errors: yes
+  ignore_errors: yes  # service could be running
 
 
 # TODO: check if there are any migrations to run, don't stop service if there isn't
@@ -120,5 +120,5 @@
 
 
 - name: Clean up old deployments
-  shell: find /srv/www/ -type d -name "{{ app_name }}-*" ! -name "{{ app_path }}" -exec rm -r "{}" \;
+  shell: find /srv/www/ -type d -name "{{ app_name }}-*" ! -name "{{ app_path }}" -prune -exec rm -r "{}" \;
   ignore_errors: yes
