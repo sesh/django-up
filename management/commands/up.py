@@ -131,7 +131,7 @@ class Command(BaseCommand):
                     "domain_names": " ".join(domains),
                     "certbot_domains": "-d " + " -d ".join(domains),
 
-                    "gunicorn_port": getattr(settings, "GUNICORN_PORT", "9000"),
+                    "gunicorn_port": getattr(settings, "UP_GUNICORN_PORT", "9000"),
                     "app_tar": app_tar.name,
                     "python_version": getattr(
                         settings, "UP_PYTHON_VERSION", "python3.8"
