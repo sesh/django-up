@@ -3,7 +3,7 @@
 `django-up` is a tool to quickly deploy your Django application to a Ubuntu 22.04 server with almost zero configuration.
 
 ```shell
-> ./manage.py up djangoup.com --email=<your-email>
+python manage.py up djangoup.com --email=<your-email>
 ```
 
 Running `django-up` will deploy a production ready, SSL-enabled, Django application to a VPS using:
@@ -16,7 +16,20 @@ Running `django-up` will deploy a production ready, SSL-enabled, Django applicat
 - OpenSMTPd
 
 
+## Supporting this project
+
+The easiest way to support the development of this project is to use [my Linode referal code][linode] if you sign up to Linode.
+By using this link you will receive a $100, 60-day credit once a valid payment method is added.
+If you spend $25 I will receive $25 credit in my account.
+
+`django-up` costs around $7/month to host on Linode, referrals cover that cost, plus help to support my other projects hosted there.
+
+_This is the only place where referral codes are used. All other links in the documentation will take you to the services without my reference._
+
+
 ## Quick Start (with Pipenv)
+
+Create a new VPS and update the domain's DNS records to point at it. Check that you can SSH to the new server.
 
 Ensure that `ansible` is installed on the system your are deploying from.
 
@@ -87,7 +100,7 @@ pipenv lock -r > requirements.txt
 Deploy with the `up` management command:
 
 ```shell
-> pipenv run python manage.py up yourdomain.example --email=<your-email>
+pipenv run python manage.py up yourdomain.example --email=<your-email>
 ```
 
 
@@ -143,14 +156,32 @@ UP_GUNICORN_PORT = 8556
 ```
 
 
-### Use manifest file storage
+### Using manifest file storage
 
-During the deployment `collectstatic` is executed while your previous deployment is still running.
+To minimise downtime, during the deployment `collectstatic` is executed while your previous deployment is still running.
 In order make sure that the correct version of static files are used _during the deployment_ you can use the `ManifestStaticFilesStorage` storage backend that Django provides.
 
-```
+```python
 STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
+```
+
+For most projects using this backend will be a best practice, regardless of whether you are deploying with `django-up`.
+
+
+### Supporting multiple domains
+
+As long as all domains that you plan on supporting are pointing to your server, you can include them in your `ALLOWED_HOSTS`.
+Certificates will be requested for each domain.
+
+For example, so support both the apex and `www` subdomain for a project, your could configure your application with:
+
+```python
+ALLOWED_HOSTS = [
+  'django-up.com',
+  'www.django-up.com'
+]
 ```
 
 
   [django]: https://www.djangoproject.com
+  [linode]: https://www.linode.com/lp/refer/?r=46340a230dfd33a24e40407c7ea938e31b295dec
