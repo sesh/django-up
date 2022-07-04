@@ -33,6 +33,13 @@ Create a new VPS with your preferred provider and update your domain's DNS recor
 
 Ensure that `ansible` is installed on the system your are deploying from.
 
+Create a directory for your new project and `cd` into it:
+
+```shell
+mkdir testproj
+cd testproj
+```
+
 Install Django, PyYAML and dj_database_url:
 
 ```shell
@@ -42,8 +49,7 @@ pipenv install Django pyyaml dj_database_url
 Start a new Django project:
 
 ```shell
-pipenv run django-admin startproject djup_testproj
-cd djup_testproj
+pipenv run django-admin startproject testproj .
 ```
 
 Run `git init` to initialise the new project as a git repository:
@@ -190,7 +196,7 @@ If you are likely to customise the Ansible files then it's probably easier to ju
 You can use a shell one liner to download the repository from Github and extract it into an "up" directory in your project:
 
 ```shell
-mkdir -p up && curl -L https://github.com/sesh/django-up/archive/refs/heads/main.zip | tar -xz --strip-components=1 -C up
+mkdir -p up && curl -L https://github.com/sesh/django-up/archive/refs/heads/main.zip | tar -x --strip-components=1 -C up
 ```
 
 
