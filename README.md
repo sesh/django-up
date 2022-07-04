@@ -114,7 +114,7 @@ pipenv run python manage.py up yourdomain.example --email=<your-email>
 
 ### Setting environment variables
 
-Add environment variables to a `.env` file alongside your `./manage.py`. These will be exported into the environment before running your server (and management commands during deployment).
+Add environment variables to a `.env` file alongside your `manage.py`. These will be exported into the environment before running your server (and management commands during deployment).
 
 For example, to configure Django to load the SECRET_KEY from your environment, and add a secure secret key to your `.env` file:
 
