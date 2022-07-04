@@ -12,114 +12,113 @@
   when: dot_dbpass.stdout != ""
 
 
-- name: Setup environment dictionary for management commands
+- name: Merge django_environment and our DATABASE_URL for environment
   set_fact:
     env: "{{ django_environment|combine({'DATABASE_URL': 'postgres://{{ app_name }}:{{ db_password }}@localhost:5432/{{ app_name }}'}) }}"
 
 
-- name: Make any extra directories that we've defined
-  file: path="/srv/www/{{ app_name }}/{{ item }}" state=directory
-  with_items: "{{ extra_app_dirs }}"
-
-
 - name: Copy application files to server
-  copy: src={{ app_tar }} dest=/tmp/{{ app_name }}.tar
+  copy: src={{ app_tar }} dest=/tmp/{{ app_path }}.tar
 
 
 - name: Create temporary directory
-  file: path=/tmp/{{ app_name }}/code state=directory
+  file: path=/tmp/{{ app_path }}/code state=directory
 
 
 - name: Extract code
-  unarchive: src=/tmp/{{ app_name }}.tar dest=/tmp/{{ app_name }}/code copy=no
+  unarchive: src=/tmp/{{ app_path }}.tar dest=/tmp/{{ app_path }}/code copy=no owner={{ app_name }} group={{ app_name }}
 
 
 - name: Set Django's static root
-  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="STATIC_ROOT = '/srv/www/{{ app_name }}/static/'" regexp="^STATIC_ROOT"
+  lineinfile: dest=/tmp/{{ app_path }}/code/{{ app_name }}/settings.py line="STATIC_ROOT = '/srv/www/{{ app_name }}/static/'" regexp="^STATIC_ROOT"
 
 
 - name: Set Django's media root
-  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="MEDIA_ROOT = '/srv/www/{{ app_name }}/media/'" regexp="^MEDIA_ROOT"
+  lineinfile: dest=/tmp/{{ app_path }}/code/{{ app_name }}/settings.py line="MEDIA_ROOT = '/srv/www/{{ app_name }}/media/'" regexp="^MEDIA_ROOT"
 
 
 - name: Set Django DEBUG=False
-  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = False" regexp="^DEBUG ="
+  lineinfile: dest=/tmp/{{ app_path }}/code/{{ app_name }}/settings.py line="DEBUG = False" regexp="^DEBUG ="
   when: django_debug == "no"
 
 
 - name: Set Django DEBUG=True
-  lineinfile: dest=/tmp/{{ app_name }}/code/{{ app_name }}/settings.py line="DEBUG = True" regexp="^DEBUG ="
+  lineinfile: dest=/tmp/{{ app_path }}/code/{{ app_name }}/settings.py line="DEBUG = True" regexp="^DEBUG ="
   when: django_debug == "yes"
 
 
-- name: Systemd config
-  template: src=app.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}.service
-
-
 - name: Add app.sh file
-  template: src=app.sh.j2 dest=/srv/www/{{ app_name }}/{{ app_name }}.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
+  template: src=app.sh.j2 dest=/srv/www/{{ app_path }}/{{ app_name }}.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
 
 
 - name: Add env.sh file
-  template: src=env.sh.j2 dest=/srv/www/{{ app_name }}/env.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
-
-
-- name: Nuke virtualenv
-  file: path=/srv/www/{{ app_name }}/venv state=absent
+  template: src=env.sh.j2 dest=/srv/www/{{ app_path }}/env.sh owner={{ app_name }} group={{ app_name }} mode=ug+x
 
 
 - name: Ensure latest pip
-  pip: virtualenv=/srv/www/{{ app_name }}/venv name=pip state=latest virtualenv_python={{ python_version }}
+  pip: virtualenv=/srv/www/{{ app_path }}/venv name=pip state=latest virtualenv_python={{ python_version }}
 
 
 - name: Ensure latest gunicorn
-  pip: virtualenv=/srv/www/{{ app_name }}/venv name=gunicorn state=latest virtualenv_python={{ python_version }}
+  pip: virtualenv=/srv/www/{{ app_path }}/venv name=gunicorn state=latest virtualenv_python={{ python_version }}
 
 
 - name: Ensure latest psycopg2
-  pip: virtualenv=/srv/www/{{ app_name }}/venv name=psycopg2-binary state=latest virtualenv_python={{ python_version }}
-
-
-- name: Stop app
-  service: name={{ service_name }} state=stopped
-  ignore_errors: yes
-
-
-- name: Nuke code
-  file: path=/srv/www/{{ app_name }}/code state=absent
+  pip: virtualenv=/srv/www/{{ app_path }}/venv name=psycopg2-binary state=latest virtualenv_python={{ python_version }}
 
 
 - name: Recreate code directory
-  file: path=/srv/www/{{ app_name }}/code state=directory
+  file: path=/srv/www/{{ app_path }}/code state=directory
 
 
 - name: Copy code to /srv/
-  copy: src=/tmp/{{ app_name }}/code dest=/srv/www/{{ app_name }} remote_src="yes"
+  copy: src=/tmp/{{ app_path }}/code dest=/srv/www/{{ app_path }} remote_src="yes"  owner={{ app_name }} group={{ app_name }}
 
 
-- name: Install requirements
-  pip: virtualenv=/srv/www/{{ app_name }}/venv requirements=/srv/www/{{ app_name }}/code/{{ requirements_path }} virtualenv_python={{ python_version }}
-
-
-- name: Django migrate
-  django_manage: command=migrate app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
-  environment:
-    - "{{ env }}"
+- name: Install requirements from requirements.txt
+  pip: virtualenv=/srv/www/{{ app_path }}/venv requirements=/srv/www/{{ app_path }}/code/requirements.txt virtualenv_python={{ python_version }}
 
 
 - name: Django collect static
-  django_manage: command=collectstatic app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
+  django_manage: command=collectstatic app_path=/srv/www/{{ app_path }}/code/ virtualenv=/srv/www/{{ app_path }}/venv
   environment:
     - "{{ env }}"
   ignore_errors: yes  # this will fail if `staticfiles` is not in installed apps. That's okay.
 
 
 - name: Django create cache table
-  django_manage: command=createcachetable app_path=/srv/www/{{ app_name }}/code/ virtualenv=/srv/www/{{ app_name }}/venv
+  django_manage: command=createcachetable app_path=/srv/www/{{ app_path }}/code/ virtualenv=/srv/www/{{ app_path }}/venv
   environment:
     - "{{ env }}"
   ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
 
 
+# stop the service before we run migrate
+- name: Stop app
+  service: name={{ service_name }} state=stopped
+  ignore_errors: yes
+
+
+# TODO: check if there are any migrations to run, don't stop service if there isn't
+- name: Django migrate
+  django_manage: command=migrate app_path=/srv/www/{{ app_path }}/code/ virtualenv=/srv/www/{{ app_path }}/venv
+  environment:
+    - "{{ env }}"
+
+
+# Update the systemd config with our new service
+- name: Systemd config
+  template: src=app.systemd.service.j2 dest=/etc/systemd/system/{{ service_name }}.service
+
+
+- name: Reload service
+  service: name={{ service_name }} state=reloaded daemon_reload=yes
+
+
 - name: Start app
   service: name={{ service_name }} state=started
+
+
+- name: Clean up old deployments
+  shell: find /srv/www/ -type d -name "{{ app_name }}-*" ! -name "{{ app_path }}" -exec rm -r "{}" \;
+  ignore_errors: yes

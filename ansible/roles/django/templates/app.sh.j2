@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-LOGFILE=/srv/www/{{ app_name }}/logs/{{ app_name }}.log
+LOGFILE=/srv/www/{{ app_name }}/logs/{{ app_path }}.log
 LOGDIR=$(dirname $LOGFILE)
 NUM_WORKERS={{ gunicorn_workers }}
 
@@ -13,11 +13,11 @@ GROUP={{ app_name }}
 export {{ variable_name }}="{{ value }}"
 {% endfor %}
 
-cd /srv/www/{{ app_name }}/code
-source /srv/www/{{ app_name }}/venv/bin/activate
+cd /srv/www/{{ app_path }}/code
+source /srv/www/{{ app_path }}/venv/bin/activate
 
 test -d $LOGDIR || mkdir -p $LOGDIR
 
 exec gunicorn {{ app_name }}.wsgi:application -w $NUM_WORKERS \
   --timeout=300 --user=$USER --group=$GROUP --log-level=debug \
-  {% if gunicorn_port %}-b localhost:{{ gunicorn_port }}{% endif %} --log-file=$LOGFILE 2>> $LOGFILE
+  -b localhost:{{ gunicorn_port }} --log-file=$LOGFILE 2>> $LOGFILE

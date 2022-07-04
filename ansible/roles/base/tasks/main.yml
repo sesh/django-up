@@ -1,32 +1,33 @@
 ---
 
+- name: Exit if target is not Ubuntu 22.04
+  meta: end_play
+  when: ansible_distribution_release not in ["jammy"]
+
+
+- name: Add Deadsnakes Nightly APT repository
+  apt_repository:
+    repo: ppa:deadsnakes/ppa
+
+
 - apt: update_cache=yes
 - apt: upgrade=dist
 
 
-- name: Add the Python 3 PPA
-  apt_repository: repo='ppa:deadsnakes/ppa' state=present
-
-
 - name: Install base packages
   apt:
-    pkg:
-      - git-core
+    name:
       - build-essential
-      - python-setuptools
-      - python3.8
-      - python3.8-dev
+      - "{{ python_version }}"
+      - "{{ python_version }}-dev"
+      - "{{ python_version }}-distutils"
+      - "{{ python_version }}-venv"
       - virtualenvwrapper
       - libpq-dev
       - libjpeg-dev
       - zlib1g-dev
-      - htop
+    state: latest
 
-
-- name: Install the required Python version
-  apt:
-    pkg:
-      - "{{ python_version }}"
 
 - name: Add app user group
   group:
@@ -52,10 +53,12 @@
 
 
 - name: Make directories for application
-  file: path={{ item }} state=directory
+  file: path={{ item }} state=directory owner={{ app_name }} group=staff
   with_items:
     - /srv/www/{{ app_name }}
-    - /srv/www/{{ app_name }}/static
     - /srv/www/{{ app_name }}/logs
-    - /srv/www/{{ app_name }}/code
+    - /srv/www/{{ app_name }}/static
     - /srv/www/{{ app_name }}/media
+    - /srv/www/{{ app_path }}
+    - /srv/www/{{ app_path }}/code
+    - /srv/www/{{ app_path }}/logs
