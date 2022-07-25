@@ -84,6 +84,8 @@
   environment:
     - "{{ env }}"
   ignore_errors: yes  # this will fail if `staticfiles` is not in installed apps. That's okay.
+  become: yes
+  become_user: "{{ app_name }}"
 
 
 - name: Django create cache table
@@ -91,6 +93,8 @@
   environment:
     - "{{ env }}"
   ignore_errors: yes  # this will fail if `CACHES` doesn't use DB caching
+  become: yes
+  become_user: "{{ app_name }}"
 
 
 # stop the service before we run migrate
@@ -104,6 +108,8 @@
   django_manage: command=migrate app_path=/srv/www/{{ app_path }}/code/ virtualenv=/srv/www/{{ app_path }}/venv
   environment:
     - "{{ env }}"
+  become: yes
+  become_user: "{{ app_name }}"
 
 
 # Update the systemd config with our new service

@@ -30,9 +30,7 @@ class Command(BaseCommand):
         parser.add_argument("--email", nargs=1, type=str, dest="email")
         parser.add_argument("--domain", nargs=1, type=str, dest="domain")
         parser.add_argument("--debug", action="store_true", default=False, dest="debug")
-        parser.add_argument(
-            "--verbose", action="store_true", default=False, dest="verbose"
-        )
+        parser.add_argument("--verbose", action="store_true", default=False, dest="verbose")
 
     def handle(self, *args, **options):
         ansible_dir = os.path.join(os.path.dirname(__file__), "..", "..", "ansible")
@@ -43,9 +41,7 @@ class Command(BaseCommand):
             email = email[0]
             validate_email(email)
         except (ValidationError, IndexError, TypeError):
-            sys.exit(
-                "The --email argument must be provided for the SSL certificate request"
-            )
+            sys.exit("The --email argument must be provided for the SSL certificate request")
 
         app_name = settings.WSGI_APPLICATION.split(".")[0]
 
@@ -110,9 +106,7 @@ class Command(BaseCommand):
 
         for h in hostnames:
             if h not in domains:
-                sys.exit(
-                    "{} isn't in allowed domains or DJANGO_ALLOWED_HOSTS".format(h)
-                )
+                sys.exit("{} isn't in allowed domains or DJANGO_ALLOWED_HOSTS".format(h))
 
         yam = [
             {
@@ -123,24 +117,18 @@ class Command(BaseCommand):
                     # app_name is used for our user, database and to refer to our main application folder
                     "app_name": app_name,
                     # app_path is the directory for this specific deployment
-                    "app_path": app_name
-                    + "-"
-                    + str(get_random_string(6, string.ascii_letters + string.digits)),
+                    "app_path": app_name + "-" + str(get_random_string(6, string.ascii_letters + string.digits)),
                     # service_name is our systemd service (you cannot have _ or other special characters)
                     "service_name": app_name.replace("_", ""),
                     "domain_names": " ".join(domains),
                     "certbot_domains": "-d " + " -d ".join(domains),
                     "gunicorn_port": getattr(settings, "UP_GUNICORN_PORT", "9000"),
                     "app_tar": app_tar.name,
-                    "python_version": getattr(
-                        settings, "UP_PYTHON_VERSION", "python3.8"
-                    ),
+                    "python_version": getattr(settings, "UP_PYTHON_VERSION", "python3.8"),
                     # create a random database password to use for the database user, this is
                     # saved on the remote machine and will be overridden by the ansible run
                     # if it exists
-                    "db_password": str(
-                        get_random_string(12, string.ascii_letters + string.digits)
-                    ),
+                    "db_password": str(get_random_string(12, string.ascii_letters + string.digits)),
                     "django_debug": "yes" if options["debug"] else "no",
                     "django_environment": django_environment,
                     "certbot_email": email,
