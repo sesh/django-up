@@ -20,4 +20,4 @@ test -d $LOGDIR || mkdir -p $LOGDIR
 
 exec gunicorn {{ app_name }}.wsgi:application -w $NUM_WORKERS \
   --timeout=300 --user=$USER --group=$GROUP --log-level=debug \
-  -b localhost:{{ gunicorn_port }} --log-file=$LOGFILE 2>> $LOGFILE
+  -b [::]:{{ gunicorn_port }} --log-file=$LOGFILE 2>> $LOGFILE
