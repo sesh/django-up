@@ -41,7 +41,7 @@
 
 # Use acme.sh to request a certificate
 - name: Use acme.sh to request a certificate
-  shell: /root/.acme.sh/acme.sh --issue {{ certbot_domains }} -w /var/www/challenges/
+  shell: /root/.acme.sh/acme.sh --issue {{ certbot_domains }} --server letsencrypt -w /var/www/challenges/
   when: cert_check.stdout == ""
 
 # Use acme.sh to "install" the certificate
