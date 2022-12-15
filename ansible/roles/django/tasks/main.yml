@@ -122,7 +122,7 @@
 
 
 - name: Start app
-  service: name={{ service_name }} state=started
+  service: name={{ service_name }} state=started enabled=true
 
 
 - name: Clean up old deployments
