@@ -196,7 +196,7 @@ If you are likely to customise the Ansible files then it's probably easier to ju
 You can use a shell one liner to download the repository from Github and extract it into an "up" directory in your project:
 
 ```shell
-mkdir -p up && curl -L https://github.com/sesh/django-up/archive/refs/heads/main.zip | tar -x --strip-components=1 -C up
+mkdir -p up && curl -L https://github.com/sesh/django-up/tarball/main | tar -x --strip-components=1 -C up
 ```
 
 
