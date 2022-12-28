@@ -9,8 +9,6 @@
   notify:
     - Restart nginx
 
-- name: Remove default nginx config
-  file: path=/etc/nginx/sites-enabled/default state=absent
 
 - name: Ensure the challenges directory exists
   file: path=/var/www/challenges/ state=directory
@@ -53,7 +51,7 @@
   when: cert_check.stdout == ""
 
 
-# Check if there is already a certifcate installed for {{ domain }}
+# Check if there is already a certificate installed for {{ domain }}
 - name: Find the latest SSL certificate for this domain
   shell: "ls /etc/acme.sh/live/ | grep -i ^{{ domain }}$ | tail -n 1"
   register: cert_check
