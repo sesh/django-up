@@ -50,6 +50,13 @@ class Command(BaseCommand):
                 "The --email argument or UP_EMAIL environment variable must be set for the SSL certificate request"
             )
 
+        try:
+            open("requirements.txt", "r")
+        except FileNotFoundError:
+            sys.exit(
+                "requirements.txt not found in the root directory, use `pip freeze` or `pipenv lock --requirements` to generate."
+            )
+
         app_name = settings.WSGI_APPLICATION.split(".")[0]
 
         up_dir = tempfile.TemporaryDirectory().name + "/django_up"
