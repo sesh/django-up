@@ -48,8 +48,6 @@
 
 - name: Install acme.sh
   shell: curl https://get.acme.sh | sh -s email={{ certbot_email }}
-  args:
-    warn: no
 
 
 - name: Make directories for application
