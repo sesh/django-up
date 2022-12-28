@@ -18,7 +18,7 @@ from django.core.validators import validate_email, ValidationError
 Deploying Django applications as quickly as you create them
 
 Usage:
-    ./manage.py up <hostname>... [--debug] [--verbose]
+    ./manage.py up <hostname> [--email=<email>] [--debug] [--verbose]
 """
 
 
@@ -38,10 +38,13 @@ class Command(BaseCommand):
         email = options["email"]
 
         try:
-            email = email[0]
+            if email:
+                email = email[0]
+            else:
+                email = os.environ.get("UP_EMAIL", None)
             validate_email(email)
         except (ValidationError, IndexError, TypeError):
-            sys.exit("The --email argument must be provided for the SSL certificate request")
+            sys.exit("The --email argument or UP_EMAIL environment variable must be set for the SSL certificate request")
 
         app_name = settings.WSGI_APPLICATION.split(".")[0]
 
