@@ -97,6 +97,20 @@ DATABASES = {
 }
 ```
 
+Generate a new secret key (either manually, or with a [trusted tool](https://utils.brntn.me/django-secret/)), and configure your application to pull it out of the environment.
+
+In `.env`:
+
+```
+DJANGO_SECRET_KEY=<your unique secret key>
+```
+
+And in your `settings.py` replace the existing `SECRET_KEY` line with this:
+
+```
+SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
+```
+
 Create a requirements file from your environment if one doesn't exist:
 
 ```shell
