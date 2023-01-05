@@ -3,14 +3,14 @@
 `django-up` is a tool to quickly deploy your Django application to a Ubuntu 22.04 server with almost zero configuration.
 
 ```shell
-python manage.py up djangoup.com --email=<your-email>
+python manage.py up django-up.com --email=<your-email>
 ```
 
 Running `django-up` will deploy a production ready, SSL-enabled, Django application to a VPS using:
 
 - Nginx
 - Gunicorn
-- Postres
+- PostgreSQL
 - SSL with acme.sh (using Let's Encrypt)
 - UFW
 - OpenSMTPd
@@ -22,14 +22,15 @@ The easiest way to support the development of this project is to use [my Linode 
 By using this link you will receive a $100, 60-day credit once a valid payment method is added.
 If you spend $25 I will receive $25 credit in my account.
 
-`django-up` costs around $7/month to host on Linode, referrals cover that cost, plus help to support my other projects hosted there. I've used various hosting providers over the last few years but Linode is the one that I like the most.
+`django-up` costs around $7/month to host on Linode, referrals cover that cost, plus help to support my other projects hosted there. I've used various hosting providers over the years but Linode is the one that I like the most.
 
 _This is the only place where referral codes are used. All other links in the documentation will take you to the services without my reference._
 
 
 ## Quick Start (with Pipenv)
 
-Create a new VPS with your preferred provider and update your domain's DNS records to point at it. Check that you can SSH to the new server before continuing.
+Create a new VPS with your preferred provider and update your domain's DNS records to point at it.
+Check that you can SSH to the new server as `root` before continuing.
 
 Ensure that `ansible` is installed on the system your are deploying from.
 
@@ -130,7 +131,7 @@ pipenv run python manage.py up yourdomain.example --email=<your-email>
 
 Add environment variables to a `.env` file alongside your `manage.py`. These will be exported into the environment before running your server (and management commands during deployment).
 
-For example, to configure Django to load the SECRET_KEY from your environment, and add a secure secret key to your `.env` file:
+For example, to configure Django to load the `SECRET_KEY` from your environment, and add a secure secret key to your `.env` file:
 
 `settings.py`:
 
@@ -169,7 +170,7 @@ Versions older than Python 3.8 require older versions of OpenSSL so are not incl
 Your application will bind to an internal port on your server.
 To deploy multiple applications to the same server you will need to manually specify this port.
 
-In your `settings.py`, set `GUNICORN_PORT` is set to a unique port for the server that you are deploying to:
+In your `settings.py`, set `UP_GUNICORN_PORT` is set to a unique port for the server that you are deploying to:
 
 ```python
 UP_GUNICORN_PORT = 8556
