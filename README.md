@@ -148,7 +148,7 @@ DJANGO_SECRET_KEY="dt(t9)7+&cm$nrq=p(pg--i)#+93dffwt!r05k-isd^8y1y0"
 
 ### Specifying a Python version
 
-By default, `django-up` uses Python 3.10.
+By default, `django-up` uses Python 3.8.
 If your application targets a different version you can use the `UP_PYTHON_VERSION` environment variable.
 Valid choices are:
 
