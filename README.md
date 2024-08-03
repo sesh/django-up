@@ -115,7 +115,7 @@ SECRET_KEY = os.environ["DJANGO_SECRET_KEY"]
 Create a requirements file from your environment if one doesn't exist:
 
 ```shell
-pipenv lock -r > requirements.txt
+pipenv requirements --exclude-markers > requirements.txt
 ```
 
 Deploy with the `up` management command:
